@@ -6,10 +6,16 @@ import {
 	CardHeader,
 	CardTitle,
 } from "./ui/card";
-import { Github, Sparkles } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { faFire } from "@fortawesome/free-solid-svg-icons";
+
+interface GetStartedProps {
+	onLogin: (user: any) => void;
+}
 
 
-export default function GetStarted() {
+export default function GetStarted({ onLogin }: GetStartedProps) {
 	const handleGitHubLogin = () => {
 		// Mock GitHub login
 		const mockUser = {
@@ -42,6 +48,8 @@ export default function GetStarted() {
 				},
 			],
 		};
+
+		onLogin(mockUser);
 	};
 
 	return (
@@ -51,7 +59,7 @@ export default function GetStarted() {
 			<Card className="w-full max-w-md backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
 				<CardHeader className="text-center space-y-6 pb-8">
 					<div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-						<Sparkles className="w-8 h-8 text-white" />
+						<FontAwesomeIcon icon={faFire} className="w-8 h-8 text-white" />
 					</div>
 					<div>
 						<CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent mb-2">
@@ -69,7 +77,7 @@ export default function GetStarted() {
 						className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
 						size="lg"
 					>
-						<Github className="w-5 h-5 mr-3" />
+						<FontAwesomeIcon icon={faGithub} className="w-5 h-5 mr-3" />
 						Continue with GitHub
 					</Button>
 					<p className="text-sm text-muted-foreground text-center">
@@ -80,19 +88,19 @@ export default function GetStarted() {
 						<div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground">
 							<div className="flex flex-col items-center space-y-1">
 								<div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-									<Github className="w-4 h-4 text-white" />
+									<FontAwesomeIcon icon={faGithub} className="w-4 h-4 text-white" />
 								</div>
 								<span>Connect</span>
 							</div>
 							<div className="flex flex-col items-center space-y-1">
 								<div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg flex items-center justify-center">
-									<Sparkles className="w-4 h-4 text-white" />
+									<FontAwesomeIcon icon={faFire} className="w-4 h-4 text-white" />
 								</div>
 								<span>Collaborate</span>
 							</div>
 							<div className="flex flex-col items-center space-y-1">
 								<div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
-									<Sparkles className="w-4 h-4 text-white" />
+									<FontAwesomeIcon icon={faFire} className="w-4 h-4 text-white" />
 								</div>
 								<span>Grow</span>
 							</div>
