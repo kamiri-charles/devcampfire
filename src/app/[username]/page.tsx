@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client"
+
+import { useEffect, useState } from "react";
 import AppSidebar from "@/components/app-sidebar";
 import MobileNav from "@/components/mobile-nav";
 import Dashboard from "@/components/dashboard";
@@ -9,10 +11,45 @@ import DiscoverySection from "@/components/discovery-section";
 import PrivateMessaging from "@/components/private-messaging";
 
 export default function UserPage() {
-	const [user, setUser] = useState(null);
+	const [user, setUser] = useState<any>(null);
 	const [currentSection, setCurrentSection] = useState("dashboard");
 	const [privateChatId, setPrivateChatId] = useState<string | null>(null);
 
+	// Mock GitHub login
+	const mockUser = {
+		id: "123",
+		login: "devuser",
+		name: "Alex Developer",
+		avatar_url:
+			"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+		bio: "Full-stack developer passionate about open source",
+		public_repos: 42,
+		followers: 156,
+		following: 98,
+		languages: ["JavaScript", "TypeScript", "React", "Node.js", "Python"],
+		repos: [
+			{
+				id: 1,
+				name: "awesome-react-components",
+				description: "A collection of reusable React components",
+				language: "TypeScript",
+				stars: 234,
+				forks: 45,
+			},
+			{
+				id: 2,
+				name: "api-gateway-middleware",
+				description: "Express middleware for API rate limiting and auth",
+				language: "Node.js",
+				stars: 89,
+				forks: 23,
+			},
+		],
+	};
+
+	useEffect(() => {
+		setUser(mockUser);
+	}, []);
 
 	const handleLogout = () => {
 		setUser(null);

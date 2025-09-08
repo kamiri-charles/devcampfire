@@ -110,6 +110,9 @@ export default function Dashboard({
 	onSectionChange,
 	onStartPrivateChat,
 }: DashboardProps) {
+
+	if (!user) return null;
+	
 	return (
 		<div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-purple-50 to-orange-50">
 			<div className="max-w-7xl mx-auto space-y-6">

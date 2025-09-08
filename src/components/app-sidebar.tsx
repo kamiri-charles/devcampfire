@@ -87,6 +87,8 @@ export default function AppSidebar({ user, currentSection, onSectionChange, onLo
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
+  if (!user) return null;
+
   return (
     <Sidebar collapsible="icon" className="border-r border-purple-200/50">
       <SidebarHeader className="border-b border-purple-200/50 bg-gradient-to-r from-purple-50 to-orange-50">
