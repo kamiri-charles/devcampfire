@@ -8,7 +8,7 @@ import {
 } from "./ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faAngleLeft, faAngleRight, faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
 
@@ -32,7 +32,7 @@ export default function GetStarted() {
 						<FontAwesomeIcon
 							icon={faFire}
 							size="2x"
-							className="text-purple-600"
+							className="text-orange-500"
 						/>
 						<FontAwesomeIcon
 							icon={faCaretRight}

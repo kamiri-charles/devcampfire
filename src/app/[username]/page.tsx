@@ -9,6 +9,8 @@ import ProfileSection from "@/components/profile-section";
 import CollaborationSection from "@/components/collab-section";
 import DiscoverySection from "@/components/discovery-section";
 import PrivateMessaging from "@/components/private-messaging";
+import FriendsSection from "@/components/friends-section";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function UserPage() {
 	const [user, setUser] = useState<any>(null);
@@ -93,6 +95,8 @@ export default function UserPage() {
 				return <CollaborationSection user={user} />;
 			case "discovery":
 				return <DiscoverySection user={user} />;
+			case "friends":
+				return <FriendsSection user={user} onStartPrivateChat={handleStartPrivateChat} />
 			default:
 				return (
 					<Dashboard
@@ -105,7 +109,7 @@ export default function UserPage() {
 	};
 
 	return (
-		<div className="h-screen flex bg-gradient-to-br from-purple-50 to-orange-50">
+		<div className="h-screen w-screen flex bg-gradient-to-br from-purple-50 to-orange-50">
 			{/* Desktop Sidebar */}
 			<div className="hidden md:block">
 				<AppSidebar
@@ -117,17 +121,25 @@ export default function UserPage() {
 			</div>
 
 			{/* Main Content */}
-			<div className="flex-1 flex flex-col">
-				<div className="flex-1 pb-16 md:pb-0">{renderCurrentSection()}</div>
+			<SidebarInset className="flex-1">
+				<div className="flex flex-col min-h-screen">
+					{/* Header with Sidebar Trigger (visible on desktop when sidebar is collapsed) */}
+					<header className="hidden md:flex h-14 shrink-0 items-center gap-2 border-b border-purple-200/50 bg-white/50 px-4">
+						<SidebarTrigger className="-ml-1" />
+					</header>
 
-				{/* Mobile Navigation */}
-				<MobileNav
-					currentSection={currentSection}
-					onSectionChange={setCurrentSection}
-					unreadMessages={5}
-					unreadNotifications={3}
-				/>
-			</div>
+					{/* Main Content Area */}
+					<div className="flex-1 pb-16 md:pb-0">{renderCurrentSection()}</div>
+
+					{/* Mobile Navigation */}
+					<MobileNav
+						currentSection={currentSection}
+						onSectionChange={setCurrentSection}
+						unreadMessages={5}
+						unreadNotifications={3}
+					/>
+				</div>
+			</SidebarInset>
 		</div>
 	);
 }

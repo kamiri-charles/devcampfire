@@ -1,6 +1,14 @@
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { Home, MessageCircle, User, Users, Search, Send } from "lucide-react";
+import {
+	Home,
+	MessageCircle,
+	User,
+	Users,
+	Search,
+	Send,
+	Heart,
+} from "lucide-react";
 
 interface MobileNavProps {
 	currentSection: string;
@@ -32,6 +40,12 @@ export default function MobileNav({
 			id: "messages",
 			label: "DMs",
 			icon: Send,
+			badge: 0,
+		},
+		{
+			id: "friends",
+			label: "Friends",
+			icon: Heart,
 			badge: 0,
 		},
 		{

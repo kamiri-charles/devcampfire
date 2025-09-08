@@ -146,10 +146,10 @@ export default function PrivateMessaging({
 	};
 
 	return (
-		<div className="flex-1 flex h-screen bg-gradient-to-br from-purple-50 to-orange-50">
+		<div className="flex-1 flex bg-gradient-to-br from-purple-50 to-orange-50">
 			{/* Conversations List - Hidden on mobile when chat selected */}
 			<div
-				className={`w-full md:w-80 border-r border-border bg-card ${
+				className={`w-full md:w-100 border-r border-border bg-card ${
 					selectedChat ? "hidden md:block" : "block"
 				}`}
 			>
@@ -234,7 +234,7 @@ export default function PrivateMessaging({
 			{/* Chat Area */}
 			{selectedChat && currentConversation && (
 				<div
-					className={`flex-1 flex flex-col ${
+					className={`flex-1 flex flex-col h-full ${
 						selectedChat ? "flex" : "hidden md:flex"
 					}`}
 				>
@@ -283,7 +283,7 @@ export default function PrivateMessaging({
 					</div>
 
 					{/* Messages */}
-					<ScrollArea className="flex-1 p-4">
+					<ScrollArea className="flex-1 p-4 min-h-[70vh]">
 						<div className="space-y-4">
 							{currentMessages.map((msg) => (
 								<div
