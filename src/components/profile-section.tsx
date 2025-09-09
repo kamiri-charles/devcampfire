@@ -11,20 +11,27 @@ import {
 } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
-	Github,
 	Star,
 	GitFork,
 	ExternalLink,
 	Users,
 	Calendar,
+	Loader2,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
+import { Skeleton } from "./ui/skeleton";
+import { RepoType } from "@/types/github";
+import { formatDistanceToNow } from "date-fns";
 
 interface ProfileSectionProps {
 	session: Session | null;
+	languages: string[];
+	loadingLanguages: boolean;
+	repos: RepoType[];
+	loadingRepos: boolean;
 	user: any;
 }
 
@@ -57,14 +64,21 @@ const mockActivity = [
 	},
 ];
 
-export default function ProfileSection({ session, user }: ProfileSectionProps) {
+export default function ProfileSection({
+	session,
+	languages,
+	loadingLanguages,
+	repos,
+	loadingRepos,
+	user,
+}: ProfileSectionProps) {
 	return (
 		<div className="flex-1 p-6 overflow-y-auto">
 			<div className="max-w-4xl mx-auto space-y-6">
 				{/* Profile Header */}
 				<Card>
 					<CardContent className="p-6">
-						<div className="flex items-start space-x-6">
+						<div className="flex flex-wrap items-start space-x-6">
 							<Avatar className="w-20 h-20">
 								<AvatarImage
 									src={session?.user.image || "/favicon.ico"}
@@ -82,7 +96,9 @@ export default function ProfileSection({ session, user }: ProfileSectionProps) {
 										@{session?.user.username || "username"}
 									</Badge>
 								</div>
-								<p className="text-muted-foreground mb-4">{session?.user.bio}</p>
+								<p className="text-muted-foreground mb-4">
+									{session?.user.bio}
+								</p>
 								<div className="flex items-center space-x-6 text-sm">
 									<div className="flex items-center space-x-1">
 										<Users className="w-4 h-4" />
@@ -101,6 +117,7 @@ export default function ProfileSection({ session, user }: ProfileSectionProps) {
 								href={`https://github.com/${session?.user.username}`}
 								target="_blank"
 								rel="noopener noreferrer"
+								className="hidden md:block"
 							>
 								<Button variant="outline" className="cursor-pointer">
 									<ExternalLink className="w-4 h-4 mr-2" />
@@ -108,25 +125,26 @@ export default function ProfileSection({ session, user }: ProfileSectionProps) {
 								</Button>
 							</Link>
 						</div>
-					</CardContent>
-				</Card>
 
-				{/* Skills & Languages */}
-				<Card>
-					<CardHeader>
-						<CardTitle>Skills & Technologies</CardTitle>
-						<CardDescription>
-							Primary programming languages and technologies
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="flex flex-wrap gap-2">
-							{user.languages.map((lang: string) => (
-								<Badge key={lang} variant="secondary" className="px-3 py-1">
-									{lang}
-								</Badge>
-							))}
-						</div>
+						{loadingLanguages ? (
+							<div className="flex flex-wrap gap-2 mt-8">
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+								<Skeleton className="w-20 h-7 rounded"></Skeleton>
+							</div>
+						) : (
+							<div className="flex flex-wrap gap-2 mt-8">
+								{languages.map((lang: string) => (
+									<Badge key={lang} variant="secondary" className="px-3 py-1">
+										{lang}
+									</Badge>
+								))}
+							</div>
+						)}
 					</CardContent>
 				</Card>
 
@@ -138,43 +156,58 @@ export default function ProfileSection({ session, user }: ProfileSectionProps) {
 						<TabsTrigger value="contributions">Contributions</TabsTrigger>
 					</TabsList>
 
-					<TabsContent value="repos" className="space-y-4">
-						{user.repos.map((repo: any) => (
-							<Card key={repo.id}>
-								<CardContent className="p-4">
-									<div className="flex items-start justify-between">
-										<div className="flex-1">
-											<div className="flex items-center space-x-2 mb-2">
-												<h3 className="text-lg">{repo.name}</h3>
-												<Badge variant="outline">{repo.language}</Badge>
+					{loadingRepos ? (
+						<TabsContent value="loading-repos" className="space-y-4">
+							<Loader2 className="animate-spin" />
+						</TabsContent>
+					) : (
+						<TabsContent value="repos" className="space-y-4">
+							{repos.map((repo: RepoType) => (
+								<Card key={repo.id}>
+									<CardContent className="p-4">
+										<div className="flex items-start justify-between">
+											<div className="flex-1">
+												<div className="flex items-center space-x-2 mb-2">
+													<h3 className="text-lg">{repo.name}</h3>
+													<Badge variant="outline">{repo.language}</Badge>
+												</div>
+												<p className="text-muted-foreground text-sm mb-3">
+													{repo.description}
+												</p>
+												<div className="flex items-center space-x-4 text-sm text-muted-foreground">
+													<div className="flex items-center space-x-1">
+														<Star className="w-4 h-4" />
+														<span>{repo.stargazers_count}</span>
+													</div>
+													<div className="flex items-center space-x-1">
+														<GitFork className="w-4 h-4" />
+														<span>{repo.forks}</span>
+													</div>
+													<div className="flex items-center space-x-1">
+														<Calendar className="w-4 h-4" />
+														<span>
+															{repo.updated_at
+																? `Updated ${formatDistanceToNow(
+																		new Date(repo.updated_at),
+																		{
+																			addSuffix: true,
+																		}
+																  )}`
+																: "No update info"}
+														</span>
+													</div>
+												</div>
 											</div>
-											<p className="text-muted-foreground text-sm mb-3">
-												{repo.description}
-											</p>
-											<div className="flex items-center space-x-4 text-sm text-muted-foreground">
-												<div className="flex items-center space-x-1">
-													<Star className="w-4 h-4" />
-													<span>{repo.stars}</span>
-												</div>
-												<div className="flex items-center space-x-1">
-													<GitFork className="w-4 h-4" />
-													<span>{repo.forks}</span>
-												</div>
-												<div className="flex items-center space-x-1">
-													<Calendar className="w-4 h-4" />
-													<span>Updated 3 days ago</span>
-												</div>
-											</div>
+											<Button variant="outline" size="sm">
+												<ExternalLink className="w-4 h-4 mr-2" />
+												View
+											</Button>
 										</div>
-										<Button variant="outline" size="sm">
-											<ExternalLink className="w-4 h-4 mr-2" />
-											View
-										</Button>
-									</div>
-								</CardContent>
-							</Card>
-						))}
-					</TabsContent>
+									</CardContent>
+								</Card>
+							))}
+						</TabsContent>
+					)}
 
 					<TabsContent value="activity" className="space-y-4">
 						{mockActivity.map((activity, index) => (

@@ -14,6 +14,7 @@ declare module "next-auth" {
 			following?: number;
 			public_repos?: number;
 		};
+		accessToken?: string;
 	}
 
 	interface User {
@@ -37,5 +38,6 @@ declare module "next-auth/jwt" {
 		followers?: number;
 		following?: number;
 		public_repos?: number;
+		accessToken?: string;
 	}
 }

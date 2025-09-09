@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import AppSidebar from "@/components/app-sidebar";
@@ -12,14 +12,19 @@ import PrivateMessaging from "@/components/private-messaging";
 import FriendsSection from "@/components/friends-section";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { RepoType } from "@/types/github";
 
 export default function UserPage() {
 	const [user, setUser] = useState<any>(null);
 	const [currentSection, setCurrentSection] = useState("dashboard");
 	const [privateChatId, setPrivateChatId] = useState<string | null>(null);
-	const {data: session, status} = useSession();
+	const { data: session, status } = useSession();
 	const router = useRouter();
+	const [languages, setLanguages] = useState<string[]>([]);
+	const [loadingLanguages, setLoadingLanguages] = useState(true);
+	const [repos, setRepos] = useState<RepoType[]>([]);
+	const [loadingRepos, setLoadingRepos] = useState(true);
 
 	// Mock GitHub login
 	const mockUser = {
@@ -55,13 +60,44 @@ export default function UserPage() {
 
 	useEffect(() => {
 		setUser(mockUser);
-		if (status === "unauthenticated") router.push("/welcome");
+		if (status === "unauthenticated") redirect("/welcome");
+
+		const fetchLanguages = async () => {
+			try {
+				const res = await fetch("/api/github/languages");
+				if (res.ok) {
+					const data = await res.json();
+					setLanguages(data.topLanguages);
+				}
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoadingLanguages(false);
+			}
+		};
+		fetchLanguages();
+
+		const fetchRepos = async () => {
+			try {
+				const res = await fetch("/api/github/repos");
+				if (res.ok) {
+					const data = await res.json();
+					setRepos(data);
+				}
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoadingRepos(false);
+			}
+		};
+
+		fetchRepos();
 	}, [status, router]);
 
 	const handleLogout = () => {
 		setCurrentSection("dashboard");
 		setPrivateChatId(null);
-		signOut({redirectTo: "/welcome"});
+		signOut({ redirectTo: "/welcome" });
 	};
 
 	const handleStartPrivateChat = (userId: string) => {
@@ -96,13 +132,27 @@ export default function UserPage() {
 					/>
 				);
 			case "profile":
-				return <ProfileSection session={session} user={user} />;
+				return (
+					<ProfileSection
+						session={session}
+						languages={languages}
+						loadingLanguages={loadingLanguages}
+						repos={repos}
+						loadingRepos={loadingRepos}
+						user={user}
+					/>
+				);
 			case "collaboration":
 				return <CollaborationSection user={user} />;
 			case "discovery":
 				return <DiscoverySection user={user} />;
 			case "friends":
-				return <FriendsSection user={user} onStartPrivateChat={handleStartPrivateChat} />
+				return (
+					<FriendsSection
+						user={user}
+						onStartPrivateChat={handleStartPrivateChat}
+					/>
+				);
 			default:
 				return (
 					<Dashboard
