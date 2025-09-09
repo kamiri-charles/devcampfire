@@ -13,9 +13,8 @@ function Kindling() {
     const router = useRouter();
 
     useEffect(() => {
-			if (status === "authenticated" && session?.user?.name) {
-				//router.push(`/camp/${session.user.name}`);
-                console.log(session);
+			if (status === "authenticated" && session?.user?.username) {
+				router.push(`/${session.user.username}`);
 			}
 		}, [session, status, router]);
     
