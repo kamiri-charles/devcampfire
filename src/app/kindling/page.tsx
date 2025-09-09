@@ -1,24 +1,27 @@
-"use client"
+"use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretLeft, faFire, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCaretLeft,
+	faFire,
+	faCaretRight,
+} from "@fortawesome/free-solid-svg-icons";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-
 function Kindling() {
-    const {data: session, status} = useSession();
-    const router = useRouter();
+	const { data: session, status } = useSession();
+	const router = useRouter();
 
-    useEffect(() => {
-			if (status === "authenticated" && session?.user?.username) {
-				router.push(`/${session.user.username}`);
-			}
-		}, [session, status, router]);
-    
-  return (
+	useEffect(() => {
+		if (status === "authenticated" && session?.user?.username) {
+			router.push(`/${session.user.username}`);
+		}
+	}, [session, status, router]);
+
+	return (
 		<div className="min-h-screen w-full bg-gradient-to-br from-purple-600 via-purple-700 to-orange-600 flex items-center justify-center p-4">
 			<Card className="w-full max-w-md backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
 				<CardHeader className="text-center space-y-2 pb-8">
@@ -46,13 +49,11 @@ function Kindling() {
 							className="text-purple-600"
 						/>
 					</div>
-					<span className="text-2xl text-purple-600 mb-2">
-						Loading
-					</span>
+					<span className="text-2xl text-purple-600 mb-2">Loading</span>
 				</CardContent>
 			</Card>
 		</div>
 	);
 }
 
-export default Kindling
+export default Kindling;

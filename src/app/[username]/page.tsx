@@ -11,11 +11,15 @@ import DiscoverySection from "@/components/discovery-section";
 import PrivateMessaging from "@/components/private-messaging";
 import FriendsSection from "@/components/friends-section";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function UserPage() {
 	const [user, setUser] = useState<any>(null);
 	const [currentSection, setCurrentSection] = useState("dashboard");
 	const [privateChatId, setPrivateChatId] = useState<string | null>(null);
+	const {data: session, status} = useSession();
+	const router = useRouter();
 
 	// Mock GitHub login
 	const mockUser = {
@@ -51,7 +55,8 @@ export default function UserPage() {
 
 	useEffect(() => {
 		setUser(mockUser);
-	}, []);
+		if (status === "unauthenticated") router.push("/welcome");
+	}, [status, router]);
 
 	const handleLogout = () => {
 		setUser(null);
@@ -74,6 +79,7 @@ export default function UserPage() {
 			case "dashboard":
 				return (
 					<Dashboard
+						session={session}
 						user={user}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
@@ -90,7 +96,7 @@ export default function UserPage() {
 					/>
 				);
 			case "profile":
-				return <ProfileSection user={user} />;
+				return <ProfileSection session={session} user={user} />;
 			case "collaboration":
 				return <CollaborationSection user={user} />;
 			case "discovery":
@@ -100,6 +106,7 @@ export default function UserPage() {
 			default:
 				return (
 					<Dashboard
+						session={session}
 						user={user}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
@@ -113,7 +120,7 @@ export default function UserPage() {
 			{/* Desktop Sidebar */}
 			<div className="hidden md:block">
 				<AppSidebar
-					user={user}
+					session={session}
 					currentSection={currentSection}
 					onSectionChange={setCurrentSection}
 					onLogout={handleLogout}

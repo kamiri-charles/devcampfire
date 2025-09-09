@@ -1,3 +1,4 @@
+import { Session } from "next-auth";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -17,8 +18,13 @@ import {
 	Users,
 	Calendar,
 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import Link from "next/link";
 
 interface ProfileSectionProps {
+	session: Session | null;
 	user: any;
 }
 
@@ -51,7 +57,7 @@ const mockActivity = [
 	},
 ];
 
-export default function ProfileSection({ user }: ProfileSectionProps) {
+export default function ProfileSection({ session, user }: ProfileSectionProps) {
 	return (
 		<div className="flex-1 p-6 overflow-y-auto">
 			<div className="max-w-4xl mx-auto space-y-6">
@@ -60,16 +66,20 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
 					<CardContent className="p-6">
 						<div className="flex items-start space-x-6">
 							<Avatar className="w-20 h-20">
-								<AvatarImage src={user.avatar_url} />
-								<AvatarFallback className="text-lg">
-									{user.name[0]}
+								<AvatarImage
+									src={session?.user.image || "/favicon.ico"}
+									alt={session?.user.username || "User Avatar"}
+								/>
+								<AvatarFallback>
+									<FontAwesomeIcon icon={faUser} />
 								</AvatarFallback>
 							</Avatar>
 							<div className="flex-1">
 								<div className="flex items-center space-x-4 mb-2">
-									<h1>{user.name}</h1>
+									<h1>{session?.user.name || "developer"}</h1>
 									<Badge variant="secondary">
-										<Github className="w-3 h-3 mr-1" />@{user.login}
+										<FontAwesomeIcon icon={faGithub} className="w-3 h-3 mr-1" />
+										@{session?.user.username || "username"}
 									</Badge>
 								</div>
 								<p className="text-muted-foreground mb-4">{user.bio}</p>
@@ -82,15 +92,21 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
 										<span>{user.following} following</span>
 									</div>
 									<div className="flex items-center space-x-1">
-										<Github className="w-4 h-4" />
+										<FontAwesomeIcon icon={faGithub} className="w-4 h-4" />
 										<span>{user.public_repos} repositories</span>
 									</div>
 								</div>
 							</div>
-							<Button variant="outline">
-								<ExternalLink className="w-4 h-4 mr-2" />
-								View on GitHub
-							</Button>
+							<Link
+								href={`https://github.com/${session?.user.username}`}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Button variant="outline" className="cursor-pointer">
+									<ExternalLink className="w-4 h-4 mr-2" />
+									View on GitHub
+								</Button>
+							</Link>
 						</div>
 					</CardContent>
 				</Card>

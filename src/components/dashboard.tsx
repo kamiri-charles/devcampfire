@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
 	Card,
 	CardContent,
@@ -20,8 +19,10 @@ import {
 	User,
 	Send,
 } from "lucide-react";
+import { Session } from "next-auth";
 
 interface DashboardProps {
+	session: Session | null;
 	user: any;
 	onSectionChange: (section: string) => void;
 	onStartPrivateChat: (userId: string) => void;
@@ -151,6 +152,7 @@ const mockRecentProjects = [
 ];
 
 export default function Dashboard({
+	session,
 	user,
 	onSectionChange,
 	onStartPrivateChat,
@@ -163,7 +165,7 @@ export default function Dashboard({
 				{/* Welcome Header */}
 				<div className="mb-8">
 					<h1 className="text-2xl md:text-3xl bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
-						Welcome back, {user.name.split(" ")[0]}! 👋
+						Welcome back, {session?.user.name?.split(" ")[0] || session?.user.username || "User"}!
 					</h1>
 					<p className="text-muted-foreground mt-2">
 						Here's what's happening in your developer community

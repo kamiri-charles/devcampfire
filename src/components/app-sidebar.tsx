@@ -1,8 +1,3 @@
-import { useState } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -14,35 +9,33 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   useSidebar,
 } from "./ui/sidebar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { 
   Home,
-  MessageCircle, 
   User, 
   Users, 
   Search, 
   Settings,
   Hash,
-  Github,
   LogOut,
   Send,
-  Sparkles,
   ChevronUp,
-  Plus,
   Heart
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretLeft, faFire, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { faCaretLeft, faFire, faCaretRight, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { Session } from "next-auth";
+import Link from "next/link";
 
 interface AppSidebarProps {
-  user: any;
-  currentSection: string;
-  onSectionChange: (section: string) => void;
-  onLogout: () => void;
+	session: Session | null;
+	currentSection: string;
+	onSectionChange: (section: string) => void;
+	onLogout: () => void;
 }
 
 const channels = [
@@ -92,11 +85,9 @@ const mainNavItems = [
   }
 ];
 
-export default function AppSidebar({ user, currentSection, onSectionChange, onLogout }: AppSidebarProps) {
+export default function AppSidebar({ session, currentSection, onSectionChange, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-
-  if (!user) return null;
 
   return (
 		<Sidebar collapsible="icon" className="border-r border-purple-200/50">
@@ -187,18 +178,23 @@ export default function AppSidebar({ user, currentSection, onSectionChange, onLo
 							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton
 									size="lg"
-									className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+									className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
 								>
 									<Avatar className="h-8 w-8 rounded-lg">
-										<AvatarImage src={user.avatar_url} alt={user.name} />
-										<AvatarFallback className="rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 text-white">
-											{user.name[0]}
+										<AvatarImage
+											src={session?.user.image || "/favicon.ico"}
+											alt={session?.user.username || "User Avatar"}
+										/>
+										<AvatarFallback className="rounded-lg bg-gradient-to-br from-purple-400 to-purple-600">
+											<FontAwesomeIcon icon={faUser} />
 										</AvatarFallback>
 									</Avatar>
 									<div className="grid flex-1 text-left text-sm leading-tight">
-										<span className="truncate font-semibold">{user.name}</span>
+										<span className="truncate font-semibold">
+											{session?.user.name || "developer"}
+										</span>
 										<span className="truncate text-xs text-muted-foreground">
-											@{user.login}
+											@{session?.user.username || "username"}
 										</span>
 									</div>
 									<ChevronUp className="ml-auto size-4" />
@@ -210,17 +206,23 @@ export default function AppSidebar({ user, currentSection, onSectionChange, onLo
 								align="end"
 								sideOffset={4}
 							>
-								<DropdownMenuItem onClick={() => onSectionChange("profile")}>
+								<DropdownMenuItem onClick={() => onSectionChange("profile")} className="cursor-pointer">
 									<User className="size-4 mr-2" />
 									Profile
 								</DropdownMenuItem>
-								<DropdownMenuItem>
+								<DropdownMenuItem className="cursor-pointer">
 									<Settings className="size-4 mr-2" />
 									Settings
 								</DropdownMenuItem>
 								<DropdownMenuItem>
-									<Github className="size-4 mr-2" />
-									GitHub Profile
+									<Link
+										href={`https://github.com/${session?.user.username}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<FontAwesomeIcon icon={faGithub} className="size-4 mr-2" />
+										GitHub Profile
+									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem onClick={onLogout} className="text-red-600">
