@@ -8,13 +8,32 @@ import {
 } from "./ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { faAngleLeft, faAngleRight, faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export default function GetStarted() {
 
 	const router = useRouter();
+
+	useEffect(() => {
+		// Check if the user is authenticated
+		const checkAuth = async () => {
+			const session = await getSession();
+			if (session) {
+				toast("Signing you in...", {
+					icon: <Loader2 className="animate-spin" />,
+					description: "Warming up the s'mores",
+					duration: 2000,
+					onAutoClose: () => router.push("/kindling")
+				})				
+			}
+		};
+		checkAuth();
+	}, []);
 
 	return (
 		<div className="min-h-screen w-full bg-gradient-to-br from-purple-600 via-purple-700 to-orange-600 flex items-center justify-center p-4">
@@ -51,7 +70,7 @@ export default function GetStarted() {
 				</CardHeader>
 				<CardContent className="space-y-4">
 					<Button
-						onClick={() => signIn("github", { redirectTo: "/hello" })}
+						onClick={() => signIn("github", { redirectTo: "/kindling" })}
 						className="w-full h-12 cursor-pointer bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
 						size="lg"
 					>
