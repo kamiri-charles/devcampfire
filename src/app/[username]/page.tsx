@@ -11,7 +11,7 @@ import DiscoverySection from "@/components/discovery-section";
 import PrivateMessaging from "@/components/private-messaging";
 import FriendsSection from "@/components/friends-section";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function UserPage() {
@@ -59,9 +59,9 @@ export default function UserPage() {
 	}, [status, router]);
 
 	const handleLogout = () => {
-		setUser(null);
 		setCurrentSection("dashboard");
 		setPrivateChatId(null);
+		signOut({redirectTo: "/welcome"});
 	};
 
 	const handleStartPrivateChat = (userId: string) => {

@@ -225,7 +225,7 @@ export default function AppSidebar({ session, currentSection, onSectionChange, o
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={onLogout} className="text-red-600">
+								<DropdownMenuItem onClick={onLogout} className="text-red-600 cursor-pointer">
 									<LogOut className="size-4 mr-2" />
 									Sign out
 								</DropdownMenuItem>

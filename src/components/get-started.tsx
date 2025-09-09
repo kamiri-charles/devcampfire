@@ -9,26 +9,27 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
-import { useRouter } from "next/navigation";
-import { getSession, signIn } from "next-auth/react";
+import { useRouter, redirect } from "next/navigation";
+import { getSession, signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { auth } from "@/auth";
 
 export default function GetStarted() {
 
 	const router = useRouter();
+	const session = useSession();
 
 	useEffect(() => {
 		// Check if the user is authenticated
 		const checkAuth = async () => {
-			const session = await getSession();
 			if (session) {
 				toast("Signing you in...", {
 					icon: <Loader2 className="animate-spin" />,
 					description: "Warming up the s'mores",
 					duration: 2000,
-					onAutoClose: () => router.push("/kindling")
+					onAutoClose: () => redirect("/kindling")
 				})				
 			}
 		};

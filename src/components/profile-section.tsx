@@ -82,18 +82,18 @@ export default function ProfileSection({ session, user }: ProfileSectionProps) {
 										@{session?.user.username || "username"}
 									</Badge>
 								</div>
-								<p className="text-muted-foreground mb-4">{user.bio}</p>
+								<p className="text-muted-foreground mb-4">{session?.user.bio}</p>
 								<div className="flex items-center space-x-6 text-sm">
 									<div className="flex items-center space-x-1">
 										<Users className="w-4 h-4" />
-										<span>{user.followers} followers</span>
+										<span>{session?.user.followers} followers</span>
 									</div>
 									<div className="flex items-center space-x-1">
-										<span>{user.following} following</span>
+										<span>{session?.user.following} following</span>
 									</div>
 									<div className="flex items-center space-x-1">
 										<FontAwesomeIcon icon={faGithub} className="w-4 h-4" />
-										<span>{user.public_repos} repositories</span>
+										<span>{session?.user.public_repos} repositories</span>
 									</div>
 								</div>
 							</div>
