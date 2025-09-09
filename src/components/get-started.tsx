@@ -10,8 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faAngleLeft, faAngleRight, faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
-
-
+import { signIn } from "next-auth/react";
 
 export default function GetStarted() {
 
@@ -52,7 +51,7 @@ export default function GetStarted() {
 				</CardHeader>
 				<CardContent className="space-y-4">
 					<Button
-						onClick={() => router.push("/kamiri-charles")}
+						onClick={() => signIn("github", { redirectTo: "/hello" })}
 						className="w-full h-12 cursor-pointer bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
 						size="lg"
 					>
