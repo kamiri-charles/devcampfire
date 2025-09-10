@@ -7,7 +7,7 @@ import { Badge } from "../ui/badge";
 import { Send, ArrowLeft, Search } from "lucide-react";
 import { ChatArea } from "./chat-area";
 
-interface PrivateMessagingProps {
+interface DirectMessagesProps {
 	chatId?: string;
 	onBack: () => void;
 }
@@ -48,7 +48,7 @@ const mockConversations = [
 export default function DirectMessages({
 	chatId,
 	onBack,
-}: PrivateMessagingProps) {
+}: DirectMessagesProps) {
 	const [selectedChat, setSelectedChat] = useState(chatId);
 	const [searchQuery, setSearchQuery] = useState("");
 

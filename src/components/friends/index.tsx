@@ -2,15 +2,13 @@ import { useState } from "react";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
-	CardTitle,
-} from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { Input } from "./ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Input } from "../ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
 	MessageCircle,
 	UserPlus,
@@ -18,8 +16,6 @@ import {
 	Github,
 	Search,
 	Users,
-	Star,
-	Calendar,
 	Code2,
 	ExternalLink,
 } from "lucide-react";
@@ -40,8 +36,7 @@ interface Friend {
 	mutualFriends: number;
 }
 
-interface FriendsSectionProps {
-	user: any;
+interface FriendsProps {
 	onStartPrivateChat?: (userId: string) => void;
 }
 
@@ -141,10 +136,9 @@ const mockSuggestions: Friend[] = [
 	},
 ];
 
-export default function FriendsSection({
-	user,
+export default function Friends({
 	onStartPrivateChat,
-}: FriendsSectionProps) {
+}: FriendsProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [friends, setFriends] = useState(mockFriends);
 	const [suggestions, setSuggestions] = useState(mockSuggestions);

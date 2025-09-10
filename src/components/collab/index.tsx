@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { Badge } from "./ui/badge";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Badge } from "../ui/badge";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "./ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+} from "../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
 	Dialog,
 	DialogContent,
@@ -18,16 +18,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "./ui/dialog";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "./ui/select";
+} from "../ui/select";
 import {
 	Plus,
 	Users,
@@ -37,9 +37,6 @@ import {
 	Search,
 } from "lucide-react";
 
-interface CollaborationSectionProps {
-	user: any;
-}
 
 const mockSpaces = [
 	{
@@ -114,9 +111,7 @@ const mockSpaces = [
 	},
 ];
 
-export default function CollaborationSection({
-	user,
-}: CollaborationSectionProps) {
+export default function Collab() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 

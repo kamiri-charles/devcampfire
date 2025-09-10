@@ -72,7 +72,7 @@ const mainNavItems = [
     isActive: false
   },
   {
-    id: "collaboration",
+    id: "collab",
     title: "Collaboration",
     icon: Users,
     isActive: false

@@ -4,7 +4,6 @@ import {
 	Home,
 	MessageCircle,
 	User,
-	Users,
 	Search,
 	Send,
 	Heart,

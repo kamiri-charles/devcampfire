@@ -1,25 +1,25 @@
 import { Session } from "next-auth";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import Link from "next/link";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "./ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { ExternalLink, Users } from "lucide-react";
+} from "../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Skeleton } from "../ui/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import Link from "next/link";
-import { Skeleton } from "./ui/skeleton";
+import { ExternalLink, Users } from "lucide-react";
 import { RepoType } from "@/types/github";
-import ProfileRepos from "./profile-repos";
+import { Repos } from "./repos";
 
-interface ProfileSectionProps {
+interface ProfileProps {
 	session: Session | null;
 	languages: string[];
 	loadingLanguages: boolean;
@@ -48,13 +48,13 @@ const mockActivity = [
 	},
 ];
 
-export default function ProfileSection({
+export default function Profile({
 	session,
 	languages,
 	loadingLanguages,
 	repos,
 	loadingRepos,
-}: ProfileSectionProps) {
+}: ProfileProps) {
 	return (
 		<div className="flex-1 p-6 overflow-y-auto">
 			<div className="max-w-4xl mx-auto space-y-6">
@@ -139,7 +139,7 @@ export default function ProfileSection({
 						<TabsTrigger value="contributions">Contributions</TabsTrigger>
 					</TabsList>
 
-					<ProfileRepos repos={repos} loadingRepos={loadingRepos} />
+					<Repos repos={repos} loadingRepos={loadingRepos} />
 
 					<TabsContent value="activity" className="space-y-4">
 						{mockActivity.map((activity, index) => (

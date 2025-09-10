@@ -1,12 +1,12 @@
 import { RepoType } from "@/types/github";
-import { TabsContent } from "./ui/tabs";
+import { TabsContent } from "../ui/tabs";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "./ui/card";
+} from "../ui/card";
 import {
 	BookOpen,
 	Clock,
@@ -18,27 +18,27 @@ import {
 	Star,
 	Unlock,
 } from "lucide-react";
-import { Badge } from "./ui/badge";
-import { Input } from "./ui/input";
+import { Badge } from "../ui/badge";
+import { Input } from "../ui/input";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "./ui/select";
-import { Button } from "./ui/button";
+} from "../ui/select";
+import { Button } from "../ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 
-interface ProfileReposProps {
+interface ReposProps {
 	repos: RepoType[];
 	loadingRepos: boolean;
 }
 
-function ProfileRepos({ repos, loadingRepos }: ProfileReposProps) {
+export function Repos({ repos, loadingRepos }: ReposProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [languageFilter, setLanguageFilter] = useState("all");
 	const [typeFilter, setTypeFilter] = useState("all");
@@ -94,9 +94,9 @@ function ProfileRepos({ repos, loadingRepos }: ProfileReposProps) {
 		<TabsContent value="repos" className="space-y-0">
 			{/* Loading */}
 			{loadingRepos && (
-				<div className="flex justify-center items-center py-16">
+				<div className="flex flex-col gap-2 justify-center items-center py-16">
 					<Loader2 className="animate-spin" />
-					<p className="text-gray-600">Getting you repos...</p>
+					<p className="text-gray-600">Getting your repos...</p>
 				</div>
 			)}
 
@@ -330,5 +330,3 @@ function ProfileRepos({ repos, loadingRepos }: ProfileReposProps) {
 		</TabsContent>
 	);
 }
-
-export default ProfileRepos;

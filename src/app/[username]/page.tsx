@@ -5,11 +5,11 @@ import AppSidebar from "@/components/app-sidebar";
 import MobileNav from "@/components/mobile-nav";
 import Dashboard from "@/components/dashboard";
 import ChatSection from "@/components/chat-section";
-import ProfileSection from "@/components/profile-section";
-import CollaborationSection from "@/components/collab-section";
-import DiscoverySection from "@/components/discovery-section";
+import Profile from "@/components/profile";
+import Collab from "@/components/collab";
+import Discovery from "@/components/discovery";
 import DirectMessages from "@/components/direct-messages";
-import FriendsSection from "@/components/friends-section";
+import Friends from "@/components/friends";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { signOut, useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
@@ -133,7 +133,7 @@ export default function UserPage() {
 				);
 			case "profile":
 				return (
-					<ProfileSection
+					<Profile
 						session={session}
 						languages={languages}
 						loadingLanguages={loadingLanguages}
@@ -141,14 +141,13 @@ export default function UserPage() {
 						loadingRepos={loadingRepos}
 					/>
 				);
-			case "collaboration":
-				return <CollaborationSection user={user} />;
+			case "collab":
+				return <Collab />;
 			case "discovery":
-				return <DiscoverySection user={user} />;
+				return <Discovery />;
 			case "friends":
 				return (
-					<FriendsSection
-						user={user}
+					<Friends
 						onStartPrivateChat={handleStartPrivateChat}
 					/>
 				);
