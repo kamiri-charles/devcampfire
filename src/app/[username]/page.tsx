@@ -139,7 +139,6 @@ export default function UserPage() {
 						loadingLanguages={loadingLanguages}
 						repos={repos}
 						loadingRepos={loadingRepos}
-						user={user}
 					/>
 				);
 			case "collaboration":

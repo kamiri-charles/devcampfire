@@ -25,6 +25,7 @@ import Link from "next/link";
 import { Skeleton } from "./ui/skeleton";
 import { RepoType } from "@/types/github";
 import { formatDistanceToNow } from "date-fns";
+import ProfileRepos from "./profile-repos";
 
 interface ProfileSectionProps {
 	session: Session | null;
@@ -32,16 +33,7 @@ interface ProfileSectionProps {
 	loadingLanguages: boolean;
 	repos: RepoType[];
 	loadingRepos: boolean;
-	user: any;
 }
-
-const mockContributions = [
-	{ date: "2024-01-15", count: 4 },
-	{ date: "2024-01-16", count: 2 },
-	{ date: "2024-01-17", count: 7 },
-	{ date: "2024-01-18", count: 1 },
-	{ date: "2024-01-19", count: 3 },
-];
 
 const mockActivity = [
 	{
@@ -70,7 +62,6 @@ export default function ProfileSection({
 	loadingLanguages,
 	repos,
 	loadingRepos,
-	user,
 }: ProfileSectionProps) {
 	return (
 		<div className="flex-1 p-6 overflow-y-auto">
@@ -156,58 +147,7 @@ export default function ProfileSection({
 						<TabsTrigger value="contributions">Contributions</TabsTrigger>
 					</TabsList>
 
-					{loadingRepos ? (
-						<TabsContent value="loading-repos" className="space-y-4">
-							<Loader2 className="animate-spin" />
-						</TabsContent>
-					) : (
-						<TabsContent value="repos" className="space-y-4">
-							{repos.map((repo: RepoType) => (
-								<Card key={repo.id}>
-									<CardContent className="p-4">
-										<div className="flex items-start justify-between">
-											<div className="flex-1">
-												<div className="flex items-center space-x-2 mb-2">
-													<h3 className="text-lg">{repo.name}</h3>
-													<Badge variant="outline">{repo.language}</Badge>
-												</div>
-												<p className="text-muted-foreground text-sm mb-3">
-													{repo.description}
-												</p>
-												<div className="flex items-center space-x-4 text-sm text-muted-foreground">
-													<div className="flex items-center space-x-1">
-														<Star className="w-4 h-4" />
-														<span>{repo.stargazers_count}</span>
-													</div>
-													<div className="flex items-center space-x-1">
-														<GitFork className="w-4 h-4" />
-														<span>{repo.forks}</span>
-													</div>
-													<div className="flex items-center space-x-1">
-														<Calendar className="w-4 h-4" />
-														<span>
-															{repo.updated_at
-																? `Updated ${formatDistanceToNow(
-																		new Date(repo.updated_at),
-																		{
-																			addSuffix: true,
-																		}
-																  )}`
-																: "No update info"}
-														</span>
-													</div>
-												</div>
-											</div>
-											<Button variant="outline" size="sm">
-												<ExternalLink className="w-4 h-4 mr-2" />
-												View
-											</Button>
-										</div>
-									</CardContent>
-								</Card>
-							))}
-						</TabsContent>
-					)}
+					<ProfileRepos repos={repos} loadingRepos={loadingRepos} />
 
 					<TabsContent value="activity" className="space-y-4">
 						{mockActivity.map((activity, index) => (
