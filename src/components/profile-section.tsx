@@ -10,21 +10,13 @@ import {
 	CardTitle,
 } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import {
-	Star,
-	GitFork,
-	ExternalLink,
-	Users,
-	Calendar,
-	Loader2,
-} from "lucide-react";
+import { ExternalLink, Users } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
 import { Skeleton } from "./ui/skeleton";
 import { RepoType } from "@/types/github";
-import { formatDistanceToNow } from "date-fns";
 import ProfileRepos from "./profile-repos";
 
 interface ProfileSectionProps {
