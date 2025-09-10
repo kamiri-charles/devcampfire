@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 interface PrivateMessagingProps {
-	user: any;
 	chatId?: string;
 	onBack: () => void;
 }
@@ -114,11 +113,10 @@ const mockMessages = {
 };
 
 export default function PrivateMessaging({
-	user,
 	chatId,
 	onBack,
 }: PrivateMessagingProps) {
-	const [selectedChat, setSelectedChat] = useState(chatId || "sarah");
+	const [selectedChat, setSelectedChat] = useState(chatId);
 	const [message, setMessage] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 
@@ -147,7 +145,6 @@ export default function PrivateMessaging({
 
 	return (
 		<div className="flex-1 flex bg-gradient-to-br from-purple-50 to-orange-50">
-			{/* Conversations List - Hidden on mobile when chat selected */}
 			<div
 				className={`w-full md:w-100 border-r border-border bg-card ${
 					selectedChat ? "hidden md:block" : "block"

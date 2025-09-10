@@ -117,6 +117,7 @@ export default function UserPage() {
 					<Dashboard
 						session={session}
 						user={user}
+						repoCount={repos.length}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
 					/>
@@ -126,7 +127,6 @@ export default function UserPage() {
 			case "messages":
 				return (
 					<PrivateMessaging
-						user={user}
 						chatId={privateChatId || undefined}
 						onBack={handleBackFromMessages}
 					/>
@@ -157,6 +157,7 @@ export default function UserPage() {
 					<Dashboard
 						session={session}
 						user={user}
+						repoCount={repos.length}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
 					/>
