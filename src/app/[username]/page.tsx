@@ -8,7 +8,7 @@ import ChatSection from "@/components/chat-section";
 import ProfileSection from "@/components/profile-section";
 import CollaborationSection from "@/components/collab-section";
 import DiscoverySection from "@/components/discovery-section";
-import PrivateMessaging from "@/components/private-messaging";
+import DirectMessages from "@/components/direct-messages";
 import FriendsSection from "@/components/friends-section";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { signOut, useSession } from "next-auth/react";
@@ -126,7 +126,7 @@ export default function UserPage() {
 				return <ChatSection user={user} />;
 			case "messages":
 				return (
-					<PrivateMessaging
+					<DirectMessages
 						chatId={privateChatId || undefined}
 						onBack={handleBackFromMessages}
 					/>
