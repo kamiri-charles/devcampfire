@@ -13,9 +13,8 @@ import Friends from "@/components/friends";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { RepoType } from "@/types/github";
+import { GitHubConnections, RepoType } from "@/types/github";
 import { DBConversation } from "@/db/schema";
-import { pusherClient } from "@/lib/pusher-client";
 
 export default function UserPage() {
 	const [user, setUser] = useState<any>(null);
@@ -28,6 +27,8 @@ export default function UserPage() {
 	const [rooms, setRooms] = useState<DBConversation[]>([]);
 	const [loadingRooms, setLoadingRooms] = useState(true);
 	const [selectedRoom, setSelectedRoom] = useState<DBConversation | null>(null);
+	const [githubConnections, setGitHubConnections] = useState<GitHubConnections | null>(null);
+	const [loadingConnections, setLoadingConnections] = useState(true);
 	const { data: session, status } = useSession();
 
 	// Mock GitHub login
@@ -111,6 +112,21 @@ export default function UserPage() {
 		};
 		fetchRooms();
 
+		const fetchConnections = async () => {
+			try {
+				const res = await fetch("/api/github/connections");
+				if (res.ok) {
+					const data = await res.json();
+					setGitHubConnections(data);
+				}
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoadingConnections(false);
+			}
+		};
+		fetchConnections();
+
 	}, [status]);
 
 	const handleLogout = () => {
@@ -167,7 +183,8 @@ export default function UserPage() {
 			case "friends":
 				return (
 					<Friends
-						onStartPrivateChat={handleStartPrivateChat}
+						connections={githubConnections}
+						loadingConnections={loadingConnections}
 					/>
 				);
 			default:

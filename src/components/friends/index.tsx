@@ -1,24 +1,28 @@
-import { useState } from "react";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-} from "../ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { Input } from "../ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Loader2, MessageCircle, Search } from "lucide-react";
 import {
-	MessageCircle,
-	UserPlus,
-	UserMinus,
-	Github,
-	Search,
-	Users,
-	Code2,
-	ExternalLink,
-} from "lucide-react";
+	GitHubConnections,
+	GitHubUserEnriched,
+	GitHubUserLite,
+} from "@/types/github";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationPrevious,
+	PaginationLink,
+	PaginationNext,
+} from "../ui/pagination";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { getPaginationRange } from "@/lib/utils";
+import Link from "next/link";
 
 interface Friend {
 	id: string;
@@ -37,129 +41,71 @@ interface Friend {
 }
 
 interface FriendsProps {
-	onStartPrivateChat?: (userId: string) => void;
+	connections: GitHubConnections | null;
+	loadingConnections: boolean;
 }
 
-const mockFriends: Friend[] = [
-	{
-		id: "1",
-		name: "Sarah Chen",
-		username: "sarahdev",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-		status: "online",
-		languages: ["TypeScript", "React", "Node.js"],
-		bio: "Full-stack developer passionate about web accessibility and performance",
-		followers: 245,
-		following: 123,
-		publicRepos: 42,
-		lastActive: "now",
-		isFollowing: true,
-		mutualFriends: 8,
-	},
-	{
-		id: "2",
-		name: "Marcus Johnson",
-		username: "marcusj",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=marcus",
-		status: "away",
-		languages: ["Python", "Django", "PostgreSQL"],
-		bio: "Backend engineer building scalable systems at scale",
-		followers: 156,
-		following: 89,
-		publicRepos: 28,
-		lastActive: "2 hours ago",
-		isFollowing: true,
-		mutualFriends: 5,
-	},
-	{
-		id: "3",
-		name: "Emily Rodriguez",
-		username: "emily_codes",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emily",
-		status: "offline",
-		languages: ["JavaScript", "Vue.js", "Go"],
-		bio: "Frontend developer who loves creating beautiful user experiences",
-		followers: 189,
-		following: 201,
-		publicRepos: 35,
-		lastActive: "1 day ago",
-		isFollowing: true,
-		mutualFriends: 12,
-	},
-	{
-		id: "4",
-		name: "Alex Kumar",
-		username: "alexk_dev",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alex",
-		status: "online",
-		languages: ["Rust", "WebAssembly", "C++"],
-		bio: "Systems programmer exploring the boundaries of web performance",
-		followers: 312,
-		following: 78,
-		publicRepos: 23,
-		lastActive: "now",
-		isFollowing: true,
-		mutualFriends: 3,
-	},
-];
-
-const mockSuggestions: Friend[] = [
-	{
-		id: "5",
-		name: "David Liu",
-		username: "davidliu",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
-		status: "online",
-		languages: ["Java", "Spring", "Kotlin"],
-		bio: "Mobile and backend developer building fintech solutions",
-		followers: 198,
-		following: 156,
-		publicRepos: 31,
-		lastActive: "now",
-		isFollowing: false,
-		mutualFriends: 7,
-	},
-	{
-		id: "6",
-		name: "Luna Martinez",
-		username: "luna_dev",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=luna",
-		status: "away",
-		languages: ["Swift", "iOS", "UIKit"],
-		bio: "iOS developer crafting delightful mobile experiences",
-		followers: 267,
-		following: 134,
-		publicRepos: 19,
-		lastActive: "30 min ago",
-		isFollowing: false,
-		mutualFriends: 4,
-	},
-];
-
 export default function Friends({
-	onStartPrivateChat,
+	connections,
+	loadingConnections,
 }: FriendsProps) {
+	const [activeTab, setActiveTab] = useState<
+		"mutual" | "following" | "followers" | "in-app"
+	>("following");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [friends, setFriends] = useState(mockFriends);
-	const [suggestions, setSuggestions] = useState(mockSuggestions);
+	const [page, setPage] = useState(1);
+	const perPage = 6;
+	const [enrichedUsers, setEnrichedUsers] = useState<
+		Record<string, GitHubUserEnriched>
+	>({});
 
-	const handleFollow = (friendId: string) => {
-		setSuggestions((prev) =>
-			prev.map((friend) =>
-				friend.id === friendId
-					? { ...friend, isFollowing: !friend.isFollowing }
-					: friend
-			)
-		);
-	};
+	// Decide which list to use
+	const currentList: GitHubUserLite[] = useMemo(() => {
+		if (!connections) return [];
 
-	const handleUnfollow = (friendId: string) => {
-		setFriends((prev) =>
-			prev.map((friend) =>
-				friend.id === friendId ? { ...friend, isFollowing: false } : friend
-			)
+		switch (activeTab) {
+			case "mutual":
+				return connections.mutuals;
+			case "following":
+				return connections.following;
+			case "followers":
+				return connections.followers;
+			case "in-app":
+				return []; // TODO: add filter later
+			default:
+				return connections.followers; // or mutuals, whichever makes sense as "default"
+		}
+	}, [activeTab, connections]);
+
+	// Apply search filter (global across all connections)
+	const filteredList = useMemo(() => {
+		if (!connections) return [];
+
+		if (!searchQuery) return currentList;
+
+		// Combine all unique users across tabs
+		const allUsers = Array.from(
+			new Map(
+				[
+					...connections.followers,
+					...connections.following,
+					...connections.mutuals,
+					// TODO: later add in-app when ready
+				].map((u) => [u.id, u])
+			).values()
 		);
-	};
+
+		return allUsers.filter((user) =>
+			user.username.toLowerCase().includes(searchQuery.toLowerCase())
+		);
+	}, [searchQuery, currentList, connections]);
+
+	const totalPages = Math.ceil(filteredList.length / perPage);
+
+	const paginatedList = useMemo(() => {
+		const start = (page - 1) * perPage;
+		return filteredList.slice(start, start + perPage);
+	}, [page, filteredList]);
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
@@ -174,11 +120,59 @@ export default function Friends({
 		}
 	};
 
-	const filteredFriends = friends.filter(
-		(friend) =>
-			friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			friend.username.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	useEffect(() => {
+		const fetchEnrichment = async () => {
+			const missing = paginatedList.filter((u) => !enrichedUsers[u.username]);
+
+			if (missing.length === 0) return;
+
+			const results = await Promise.all(
+				missing.map(async (u) => {
+					try {
+						const res = await fetch(`/api/github/connections/${u.username}`);
+						if (!res.ok) return null;
+						const data = await res.json();
+						return data as GitHubUserEnriched;
+					} catch {
+						return null;
+					}
+				})
+			);
+
+			const validResults = results.filter(Boolean) as GitHubUserEnriched[];
+
+			setEnrichedUsers((prev) => {
+				const next = { ...prev };
+				validResults.forEach((u) => {
+					next[u.username] = u;
+				});
+				return next;
+			});
+		};
+
+		fetchEnrichment();
+	}, [paginatedList, enrichedUsers]);
+
+	useEffect(() => {
+		setPage(1);
+	}, [activeTab, searchQuery]);
+
+	if (loadingConnections) {
+		return (
+			<div className="flex flex-col items-center justify-center mt-4">
+				<Loader2 className="animate-spin" />
+				<p className="mt-2 text-gray-500">Loading connections...</p>
+			</div>
+		);
+	}
+
+	if (!connections) {
+		return (
+			<div className="text-gray-500 text-center mt-8">
+				No connections available
+			</div>
+		);
+	}
 
 	return (
 		<div className="p-6 max-w-7xl mx-auto">
@@ -198,219 +192,244 @@ export default function Friends({
 					<Input
 						placeholder="Search friends..."
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						onChange={(e) => {
+							setSearchQuery(e.target.value);
+							setPage(1);
+						}}
 						className="pl-10 bg-white border-purple-200 focus:border-purple-400"
 					/>
 				</div>
 			</div>
 
 			<Tabs defaultValue="following" className="space-y-6">
-				<TabsList className="bg-white border border-purple-200">
-					<TabsTrigger
-						value="following"
-						className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700"
-					>
-						Following ({friends.length})
-					</TabsTrigger>
-					<TabsTrigger
-						value="suggestions"
-						className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700"
-					>
-						Suggestions ({suggestions.length})
-					</TabsTrigger>
-				</TabsList>
+				{!searchQuery && (
+					<TabsList className="bg-white border border-purple-200">
+						<TabsTrigger
+							value="following"
+							onClick={() => setActiveTab("following")}
+							className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 cursor-pointer hover:bg-purple-50"
+						>
+							Following ({connections.following.length})
+						</TabsTrigger>
+						<TabsTrigger
+							value="followers"
+							onClick={() => setActiveTab("followers")}
+							className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 cursor-pointer hover:bg-purple-50"
+						>
+							Followers ({connections.followers.length})
+						</TabsTrigger>
+						<TabsTrigger
+							value="mutual"
+							onClick={() => setActiveTab("mutual")}
+							className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 cursor-pointer hover:bg-purple-50"
+						>
+							Mutual ({connections.mutuals.length})
+						</TabsTrigger>
+						<TabsTrigger
+							value="in-app"
+							onClick={() => setActiveTab("in-app")}
+							className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 cursor-pointer hover:bg-purple-50"
+						>
+							In-App (0)
+						</TabsTrigger>
+					</TabsList>
+				)}
 
-				<TabsContent value="following" className="space-y-4">
+				{/* Pagination */}
+				{totalPages > 1 && (
+					<Pagination className="mt-6">
+						<PaginationContent>
+							<PaginationItem>
+								<PaginationPrevious
+									onClick={() => setPage((p) => Math.max(1, p - 1))}
+									className={
+										page === 1
+											? "pointer-events-none opacity-50"
+											: "cursor-pointer"
+									}
+								/>
+							</PaginationItem>
+
+							{getPaginationRange(page, totalPages).map((item, i) => (
+								<PaginationItem key={i} className="cursor-pointer">
+									{item === "..." ? (
+										<span className="px-3">…</span>
+									) : (
+										<PaginationLink
+											isActive={page === item}
+											onClick={() => setPage(item as number)}
+										>
+											{item}
+										</PaginationLink>
+									)}
+								</PaginationItem>
+							))}
+
+							<PaginationItem>
+								<PaginationNext
+									onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+									className={
+										page === totalPages
+											? "pointer-events-none opacity-50"
+											: "cursor-pointer"
+									}
+								/>
+							</PaginationItem>
+						</PaginationContent>
+					</Pagination>
+				)}
+
+				{/* TabsContent or Search Results */}
+				{!searchQuery ? (
+					<TabsContent value={activeTab} className="space-y-4">
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+							{paginatedList.map((conn) => {
+								const enriched = enrichedUsers[conn.username];
+								return (
+									<Card
+										key={conn.id}
+										className="hover:shadow-lg transition-shadow border-purple-200/50"
+									>
+										<CardHeader className="pb-4">
+											<div className="flex items-start justify-between">
+												<div className="flex items-center space-x-3">
+													<div className="relative">
+														<Avatar className="h-12 w-12">
+															<AvatarImage
+																src={conn.avatar}
+																alt={enriched?.name || conn.username}
+															/>
+															<AvatarFallback>
+																<FontAwesomeIcon icon={faUser} />
+															</AvatarFallback>
+														</Avatar>
+														<div
+															className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(
+																"Online"
+															)}`}
+														/>
+													</div>
+													<div className="flex-1 min-w-0">
+														<h3 className="font-semibold text-gray-900 truncate">
+															{enriched?.name || "developer"}
+														</h3>
+														<p className="text-sm text-gray-500">
+															@{conn.username}
+														</p>
+														<p className="text-xs text-gray-400">
+															"Last active"
+														</p>
+													</div>
+												</div>
+											</div>
+										</CardHeader>
+										<CardContent className="space-y-4">
+											<p className="text-sm text-gray-600 line-clamp-2">
+												{enriched?.bio || "No bio available"}
+											</p>
+
+											<div className="flex space-x-2">
+												<Button
+													size="sm"
+													onClick={() => console.log("Start chat")} // TODO: implement
+													className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
+												>
+													<MessageCircle className="w-4 h-4 mr-2" />
+													Message
+												</Button>
+												<Link
+													href={`https://github.com/${conn.username}`}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<Button
+														variant="outline"
+														size="sm"
+														className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+													>
+														<FontAwesomeIcon
+															icon={faGithub}
+															className="w-4 h-4"
+														/>
+													</Button>
+												</Link>
+											</div>
+										</CardContent>
+									</Card>
+								);
+							})}
+						</div>
+					</TabsContent>
+				) : (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						{filteredFriends.map((friend) => (
-							<Card
-								key={friend.id}
-								className="hover:shadow-lg transition-shadow border-purple-200/50"
-							>
-								<CardHeader className="pb-4">
-									<div className="flex items-start justify-between">
-										<div className="flex items-center space-x-3">
-											<div className="relative">
-												<Avatar className="h-12 w-12">
-													<AvatarImage src={friend.avatar} alt={friend.name} />
-													<AvatarFallback>{friend.name[0]}</AvatarFallback>
-												</Avatar>
-												<div
-													className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(
-														friend.status
-													)}`}
-												/>
-											</div>
-											<div className="flex-1 min-w-0">
-												<h3 className="font-semibold text-gray-900 truncate">
-													{friend.name}
-												</h3>
-												<p className="text-sm text-gray-500">
-													@{friend.username}
-												</p>
-												<p className="text-xs text-gray-400">
-													{friend.lastActive}
-												</p>
+						{paginatedList.map((conn) => {
+							const enriched = enrichedUsers[conn.username];
+							return (
+								<Card
+									key={conn.id}
+									className="hover:shadow-lg transition-shadow border-purple-200/50"
+								>
+									<CardHeader className="pb-4">
+										<div className="flex items-start justify-between">
+											<div className="flex items-center space-x-3">
+												<div className="relative">
+													<Avatar className="h-12 w-12">
+														<AvatarImage
+															src={conn.avatar}
+															alt={enriched?.name || conn.username}
+														/>
+														<AvatarFallback>
+															<FontAwesomeIcon icon={faUser} />
+														</AvatarFallback>
+													</Avatar>
+													<div
+														className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(
+															"Online"
+														)}`}
+													/>
+												</div>
+												<div className="flex-1 min-w-0">
+													<h3 className="font-semibold text-gray-900 truncate">
+														{enriched?.name || "developer"}
+													</h3>
+													<p className="text-sm text-gray-500">
+														@{conn.username}
+													</p>
+													<p className="text-xs text-gray-400">"Last active"</p>
+												</div>
 											</div>
 										</div>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => handleUnfollow(friend.id)}
-											className="text-gray-400 hover:text-red-500"
-										>
-											<UserMinus className="w-4 h-4" />
-										</Button>
-									</div>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									<p className="text-sm text-gray-600 line-clamp-2">
-										{friend.bio}
-									</p>
+									</CardHeader>
+									<CardContent className="space-y-4">
+										<p className="text-sm text-gray-600 line-clamp-2">
+											{enriched?.bio || "No bio available"}
+										</p>
 
-									<div className="flex flex-wrap gap-1">
-										{friend.languages.slice(0, 3).map((lang) => (
-											<Badge
-												key={lang}
-												className="text-xs bg-purple-100 text-purple-700 border-0"
+										<div className="flex space-x-2">
+											<Button
+												size="sm"
+												onClick={() => console.log("Start chat")} // TODO: implement
+												className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
 											>
-												{lang}
-											</Badge>
-										))}
-										{friend.languages.length > 3 && (
-											<Badge variant="outline" className="text-xs">
-												+{friend.languages.length - 3}
-											</Badge>
-										)}
-									</div>
-
-									<div className="flex items-center justify-between text-xs text-gray-500">
-										<div className="flex items-center space-x-3">
-											<span className="flex items-center space-x-1">
-												<Users className="w-3 h-3" />
-												<span>{friend.followers}</span>
-											</span>
-											<span className="flex items-center space-x-1">
-												<Code2 className="w-3 h-3" />
-												<span>{friend.publicRepos}</span>
-											</span>
+												<MessageCircle className="w-4 h-4 mr-2" />
+												Message
+											</Button>
+											<Link href={`https://github.com/${conn.username}`} target="_blank" rel="noopener noreferrer">
+												<Button
+													variant="outline"
+													size="sm"
+													className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+												>
+													<FontAwesomeIcon icon={faGithub} className="w-4 h-4" />
+												</Button>
+											</Link>
 										</div>
-										{friend.mutualFriends > 0 && (
-											<span className="text-purple-600">
-												{friend.mutualFriends} mutual
-											</span>
-										)}
-									</div>
-
-									<div className="flex space-x-2">
-										<Button
-											size="sm"
-											onClick={() => onStartPrivateChat?.(friend.id)}
-											className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
-										>
-											<MessageCircle className="w-4 h-4 mr-2" />
-											Message
-										</Button>
-										<Button
-											variant="outline"
-											size="sm"
-											className="border-purple-200 hover:bg-purple-50"
-										>
-											<Github className="w-4 h-4" />
-										</Button>
-									</div>
-								</CardContent>
-							</Card>
-						))}
+									</CardContent>
+								</Card>
+							);
+						})}
 					</div>
-				</TabsContent>
-
-				<TabsContent value="suggestions" className="space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						{suggestions.map((friend) => (
-							<Card
-								key={friend.id}
-								className="hover:shadow-lg transition-shadow border-purple-200/50"
-							>
-								<CardHeader className="pb-4">
-									<div className="flex items-start justify-between">
-										<div className="flex items-center space-x-3">
-											<div className="relative">
-												<Avatar className="h-12 w-12">
-													<AvatarImage src={friend.avatar} alt={friend.name} />
-													<AvatarFallback>{friend.name[0]}</AvatarFallback>
-												</Avatar>
-												<div
-													className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(
-														friend.status
-													)}`}
-												/>
-											</div>
-											<div className="flex-1 min-w-0">
-												<h3 className="font-semibold text-gray-900 truncate">
-													{friend.name}
-												</h3>
-												<p className="text-sm text-gray-500">
-													@{friend.username}
-												</p>
-												<p className="text-xs text-purple-600">
-													{friend.mutualFriends} mutual friends
-												</p>
-											</div>
-										</div>
-									</div>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									<p className="text-sm text-gray-600 line-clamp-2">
-										{friend.bio}
-									</p>
-
-									<div className="flex flex-wrap gap-1">
-										{friend.languages.slice(0, 3).map((lang) => (
-											<Badge
-												key={lang}
-												className="text-xs bg-purple-100 text-purple-700 border-0"
-											>
-												{lang}
-											</Badge>
-										))}
-									</div>
-
-									<div className="flex items-center justify-between text-xs text-gray-500">
-										<div className="flex items-center space-x-3">
-											<span className="flex items-center space-x-1">
-												<Users className="w-3 h-3" />
-												<span>{friend.followers}</span>
-											</span>
-											<span className="flex items-center space-x-1">
-												<Code2 className="w-3 h-3" />
-												<span>{friend.publicRepos}</span>
-											</span>
-										</div>
-									</div>
-
-									<div className="flex space-x-2">
-										<Button
-											size="sm"
-											onClick={() => handleFollow(friend.id)}
-											className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-										>
-											<UserPlus className="w-4 h-4 mr-2" />
-											Follow
-										</Button>
-										<Button
-											variant="outline"
-											size="sm"
-											className="border-purple-200 hover:bg-purple-50"
-										>
-											<ExternalLink className="w-4 h-4" />
-										</Button>
-									</div>
-								</CardContent>
-							</Card>
-						))}
-					</div>
-				</TabsContent>
+				)}
 			</Tabs>
 		</div>
 	);
