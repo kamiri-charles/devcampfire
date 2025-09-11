@@ -2,30 +2,28 @@ import { db } from "@/index";
 import { messages, users, conversations } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { auth } from "@/auth";
+import { NextRequest, NextResponse } from "next/server";
 
-interface Params {
-	params: {
-		conversationId: string;
-	};
-}
 
-export async function GET(req: Request, { params }: Params) {
+export async function GET(req: NextRequest, { params } : {params: Promise<{conversation_id: string}>}) {
+	const conversation_id = (await params).conversation_id;
 	try {
 		const session = await auth();
-		if (!session?.user?.id) {
-			return new Response(JSON.stringify({ error: "Unauthorized" }), {
+		if (!session) {
+			return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
 				status: 401,
 			});
 		}
 
+
 		const convo = await db
 			.select()
 			.from(conversations)
-			.where(eq(conversations.id, params.conversationId))
+			.where(eq(conversations.id, conversation_id))
 			.limit(1);
 
 		if (convo.length === 0) {
-			return new Response(JSON.stringify({ error: "Conversation not found" }), {
+			return new NextResponse(JSON.stringify({ error: "Conversation not found" }), {
 				status: 404,
 			});
 		}
@@ -45,13 +43,13 @@ export async function GET(req: Request, { params }: Params) {
 			})
 			.from(messages)
 			.innerJoin(users, eq(messages.senderId, users.id))
-			.where(eq(messages.conversationId, params.conversationId))
+			.where(eq(messages.conversationId, conversation_id))
 			.orderBy(desc(messages.createdAt));
 
-		return new Response(JSON.stringify(convoMessages), { status: 200 });
+		return new NextResponse(JSON.stringify(convoMessages), { status: 200 });
 	} catch (err) {
 		console.error("Error fetching messages:", err);
-		return new Response(JSON.stringify({ error: "Server error" }), {
+		return new NextResponse(JSON.stringify({ error: "Server error" }), {
 			status: 500,
 		});
 	}

@@ -25,33 +25,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 	callbacks: {
 		async signIn({ user }) {
 			try {
-				// check if user exists
-				const existingUser = await db
+				let [dbUser] = await db
 					.select()
 					.from(users)
 					.where(eq(users.githubUsername, user.username as string))
 					.limit(1);
 
-				if (existingUser.length === 0) {
-					// create user
-					await db.insert(users).values({
-						githubUsername: user.username as string,
-						name: user.name ?? null,
-						email: user.email ?? null,
-						imageUrl: user.image ?? null,
-						bio: (user as any).bio ?? null,
-					});
+				if (!dbUser) {
+					[dbUser] = await db
+						.insert(users)
+						.values({
+							githubUsername: user.username as string,
+							name: user.name ?? null,
+							email: user.email ?? null,
+							imageUrl: user.image ?? null,
+							bio: user.bio ?? null,
+						})
+						.returning();
 				}
 
+				user.dbId = dbUser.id;
 				return true;
 			} catch (e) {
 				console.error("Error creating/checking user:", e);
-        return true;
+				return true;
 			}
 		},
 
 		async jwt({ token, user, account }) {
 			if (user) {
+				token.id = user.id;
+				token.dbId = user.dbId;
 				token.username = user.username;
 				token.bio = user.bio;
 				token.followers = user.followers;
@@ -65,8 +69,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 			return token;
 		},
+
 		async session({ session, token }) {
 			if (session.user) {
+				session.user.id = token.id as string;
+				session.user.dbId = token.dbId as string;
 				session.user.username = token.username as string;
 				session.user.bio = token.bio as string;
 				session.user.followers = token.followers as number;
@@ -74,7 +81,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 				session.user.public_repos = token.public_repos as number;
 			}
 
-			// Only use server-side in API routes)
 			if (token?.accessToken) {
 				session.accessToken = token.accessToken as string;
 			}

@@ -5,11 +5,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
-import { Send, Hash } from "lucide-react";
+import { Send, Hash, Loader2 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DBConversation, DBMessageWithSender } from "@/db/schema";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
+import { pusherClient } from "@/lib/pusher-client";
 
 interface RoomMessagesProps {
 	selectedRoom: DBConversation | null;
@@ -19,42 +20,74 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 	const [message, setMessage] = useState("");
 	const [messages, setMessages] = useState<DBMessageWithSender[]>([]);
 	const [loadingMessages, setLoadingMessages] = useState(true);
-
-	// 🔑 Ref for auto-scroll
+	const [, setTick] = useState(0);
 	const bottomRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		if (selectedRoom?.id) {
-			const fetchMessages = async () => {
-				try {
-					const res = await fetch(
-						`/api/db/conversations/${selectedRoom.id}/messages`
-					);
-					if (res.ok) {
-						const data = await res.json();
-						setMessages(data);
-					}
-				} catch (e) {
-					console.error(e);
-				} finally {
-					setLoadingMessages(false);
+		if (!selectedRoom?.id) return;
+		const fetchMessages = async () => {
+			try {
+				const res = await fetch(
+					`/api/db/conversations/${selectedRoom.id}/messages`
+				);
+				if (res.ok) {
+					const data = await res.json();
+					setMessages(data);
 				}
-			};
-			fetchMessages();
-		}
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoadingMessages(false);
+			}
+		};
+		fetchMessages();
+
+		const channel = pusherClient.subscribe(`conversation-${selectedRoom.id}`);
+
+		channel.bind("new-message", (message: DBMessageWithSender) => {
+			setMessages((prev) => [...prev, message]);
+		});
+
+		// Cleanup
+		return () => {
+			channel.unbind_all();
+			pusherClient.unsubscribe(`conversation-${selectedRoom.id}`);
+		};
 	}, [selectedRoom?.id]);
 
-	// 🔑 Scroll when messages update
 	useEffect(() => {
 		if (bottomRef.current) {
 			bottomRef.current.scrollIntoView({ behavior: "smooth" });
 		}
 	}, [messages]);
 
-	const handleSendMessage = () => {
-		if (!message.trim()) return;
+	// Used to trigger re-renders for relative time
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTick((t) => t + 1);
+		}, 60000);
 
-		// TODO: send message to API here
+		return () => clearInterval(interval);
+	}, []);
+
+	const handleSendMessage = async () => {
+		if (!message.trim()) return;
+		if (!selectedRoom?.id) return;
+
+		try {
+			await fetch("/api/db/messages", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					conversationId: selectedRoom.id,
+					content: message,
+				}),
+			});
+		} catch (err) {
+			console.error("Failed to send message:", err);
+		}
 
 		setMessage("");
 	};
@@ -78,7 +111,7 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 						{selectedRoom?.name || "Channel"}
 					</h2>
 					<Badge className="ml-auto bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 border-0">
-						{messages.length + 47} members
+						{messages.length} messages
 					</Badge>
 				</div>
 				<p className="text-sm text-muted-foreground mt-1">
@@ -90,7 +123,8 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 			<ScrollArea className="flex-1 p-4">
 				<div className="space-y-4">
 					{loadingMessages ? (
-						<div className="text-sm text-muted-foreground text-center py-8">
+						<div className="text-sm text-muted-foreground text-center flex flex-col items-center justify-center gap-2 h-60">
+							<Loader2 className="animate-spin" />
 							Loading messages...
 						</div>
 					) : messages.length === 0 ? (
@@ -139,8 +173,10 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 					<Input
 						value={message}
 						onChange={(e) => setMessage(e.target.value)}
-						onKeyPress={handleKeyPress}
-						placeholder={`Message #${selectedRoom?.name || "channel"}`}
+						onKeyDown={handleKeyPress}
+						placeholder={`Message #${
+							selectedRoom?.name?.toLowerCase() || "channel"
+						}`}
 						className="flex-1 bg-white/80"
 					/>
 					<Button

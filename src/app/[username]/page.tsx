@@ -15,6 +15,7 @@ import { signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { RepoType } from "@/types/github";
 import { DBConversation } from "@/db/schema";
+import { pusherClient } from "@/lib/pusher-client";
 
 export default function UserPage() {
 	const [user, setUser] = useState<any>(null);
@@ -140,7 +141,7 @@ export default function UserPage() {
 						onStartPrivateChat={handleStartPrivateChat}
 					/>
 				);
-			case "chat":
+			case "room":
 				return <RoomMessages selectedRoom={selectedRoom} />;
 			case "messages":
 				return (
@@ -191,6 +192,7 @@ export default function UserPage() {
 					rooms={rooms}
 					loadingRooms={loadingRooms}
 					onSectionChange={setCurrentSection}
+					setSelectedRoom={setSelectedRoom}
 					onLogout={handleLogout}
 				/>
 			</div>

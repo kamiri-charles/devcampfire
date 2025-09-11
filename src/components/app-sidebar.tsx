@@ -33,13 +33,15 @@ import { Session } from "next-auth";
 import Link from "next/link";
 import { Skeleton } from "./ui/skeleton";
 import { DBConversation } from "@/db/schema";
+import { Dispatch, SetStateAction } from "react";
 
 interface AppSidebarProps {
 	session: Session | null;
 	currentSection: string;
 	rooms: DBConversation[];
 	loadingRooms: boolean;
-	onSectionChange: (section: string) => void;
+	onSectionChange: Dispatch<SetStateAction<string>>;
+	setSelectedRoom: Dispatch<SetStateAction<DBConversation | null>>;
 	onLogout: () => void;
 }
 
@@ -83,7 +85,7 @@ const mainNavItems = [
   }
 ];
 
-export default function AppSidebar({ session, currentSection, rooms, loadingRooms, onSectionChange, onLogout }: AppSidebarProps) {
+export default function AppSidebar({ session, currentSection, rooms, loadingRooms, onSectionChange, setSelectedRoom, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
@@ -160,16 +162,19 @@ export default function AppSidebar({ session, currentSection, rooms, loadingRoom
 									<SidebarMenuItem key={room.id}>
 										<SidebarMenuButton
 											tooltip={`#${room.name}`}
-											onClick={() => onSectionChange("chat")}
+											onClick={() => {
+												setSelectedRoom(room);
+												onSectionChange("room");
+											}}
 											className="text-muted-foreground hover:text-foreground hover:bg-purple-50 cursor-pointer"
 										>
 											<Hash className="size-4" />
-											<span>{room.name}</span>
+											<span>{room.name?.toLowerCase()}</span>
 										</SidebarMenuButton>
 									</SidebarMenuItem>
 								))
 							) : (
-								<div className="text-sm text-muted-foreground px-2 py-1">
+								<div className="text-sm text-center mt-2 text-muted-foreground px-2 py-1">
 									There was an error getting the channels
 								</div>
 							)}
