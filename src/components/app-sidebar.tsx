@@ -23,28 +23,26 @@ import {
   LogOut,
   Send,
   ChevronUp,
-  Heart
+  Heart,
+  Loader2
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretLeft, faFire, faCaretRight, faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { Session } from "next-auth";
 import Link from "next/link";
+import { Skeleton } from "./ui/skeleton";
+import { DBConversation } from "@/db/schema";
 
 interface AppSidebarProps {
 	session: Session | null;
 	currentSection: string;
+	rooms: DBConversation[];
+	loadingRooms: boolean;
 	onSectionChange: (section: string) => void;
 	onLogout: () => void;
 }
 
-const channels = [
-  { id: "general", name: "general", description: "General discussion" },
-  { id: "javascript", name: "javascript", description: "JavaScript discussions" },
-  { id: "react", name: "react", description: "React help and tips" },
-  { id: "python", name: "python", description: "Python programming" },
-  { id: "help", name: "help", description: "Get help from the community" }
-];
 
 const mainNavItems = [
   {
@@ -85,7 +83,7 @@ const mainNavItems = [
   }
 ];
 
-export default function AppSidebar({ session, currentSection, onSectionChange, onLogout }: AppSidebarProps) {
+export default function AppSidebar({ session, currentSection, rooms, loadingRooms, onSectionChange, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
@@ -154,18 +152,27 @@ export default function AppSidebar({ session, currentSection, onSectionChange, o
 					<SidebarGroupLabel>Channels</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{channels.map((channel) => (
-								<SidebarMenuItem key={channel.id}>
-									<SidebarMenuButton
-										tooltip={`#${channel.name}`}
-										onClick={() => onSectionChange("chat")}
-										className="text-muted-foreground hover:text-foreground hover:bg-purple-50 cursor-pointer"
-									>
-										<Hash className="size-4" />
-										<span>{channel.name}</span>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
+							{loadingRooms ? (
+								<Loader2 className="animate-spin mx-auto mt-2" />
+							) : rooms.length > 0 ? (
+
+								rooms.map((room) => (
+									<SidebarMenuItem key={room.id}>
+										<SidebarMenuButton
+											tooltip={`#${room.name}`}
+											onClick={() => onSectionChange("chat")}
+											className="text-muted-foreground hover:text-foreground hover:bg-purple-50 cursor-pointer"
+										>
+											<Hash className="size-4" />
+											<span>{room.name}</span>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								))
+							) : (
+								<div className="text-sm text-muted-foreground px-2 py-1">
+									There was an error getting the channels
+								</div>
+							)}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
@@ -206,7 +213,10 @@ export default function AppSidebar({ session, currentSection, onSectionChange, o
 								align="end"
 								sideOffset={4}
 							>
-								<DropdownMenuItem onClick={() => onSectionChange("profile")} className="cursor-pointer">
+								<DropdownMenuItem
+									onClick={() => onSectionChange("profile")}
+									className="cursor-pointer"
+								>
 									<User className="size-4 mr-2" />
 									Profile
 								</DropdownMenuItem>
@@ -225,7 +235,10 @@ export default function AppSidebar({ session, currentSection, onSectionChange, o
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={onLogout} className="text-red-600 cursor-pointer">
+								<DropdownMenuItem
+									onClick={onLogout}
+									className="text-red-600 cursor-pointer"
+								>
 									<LogOut className="size-4 mr-2" />
 									Sign out
 								</DropdownMenuItem>

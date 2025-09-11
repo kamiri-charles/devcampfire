@@ -15,6 +15,7 @@ export const userStatus = pgEnum("user_status", [
 	"away",
 	"busy",
 ]);
+export const conversationType = pgEnum("conversation_type", ["dm", "group"]);
 
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -40,7 +41,6 @@ export const users = pgTable("users", {
 });
 ;
 
-export const conversationType = pgEnum("conversation_type", ["dm", "group"]);
 
 export const conversations = pgTable("conversations", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -91,3 +91,24 @@ export const messages = pgTable("messages", {
 		.defaultNow()
 		.notNull(),
 });
+
+
+export type DBUser = typeof users.$inferSelect;
+export type DBNewUser = typeof users.$inferInsert;
+
+export type DBConversation = typeof conversations.$inferSelect;
+export type DBNewConversation = typeof conversations.$inferInsert;
+
+export type DBConversationParticipant = typeof conversationParticipants.$inferSelect;
+export type DBNewConversationParticipant = typeof conversationParticipants.$inferInsert;
+
+export type DBMessage = typeof messages.$inferSelect;
+export type DBNewMessage = typeof messages.$inferInsert;
+export type DBMessageWithSender = DBMessage & {
+	sender: {
+		id: string;
+		name: string | null;
+		imageUrl: string | null;
+		githubUsername: string | null;
+	};
+};
