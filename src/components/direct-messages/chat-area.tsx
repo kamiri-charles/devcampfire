@@ -4,19 +4,15 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ArrowLeft, Phone, Video, MoreVertical, Send } from "lucide-react";
+import { DMConversation } from "@/types/db-customs";
+import { useSession } from "next-auth/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
 interface ChatAreaProps {
 	selectedChat: string;
-	setSelectedChat: Dispatch<SetStateAction<string | undefined>>;
-	currentConversation: {
-		id: string;
-		name: string;
-		avatar: string;
-		lastMessage: string;
-		lastMessageTime: string;
-		unreadCount: number;
-		online: boolean;
-	};
+	setSelectedChat: Dispatch<SetStateAction<string | null>>;
+	currentConversation: DMConversation;
 }
 
 const mockMessages = {
@@ -80,6 +76,7 @@ const mockMessages = {
 };
 
 export function ChatArea({selectedChat, setSelectedChat, currentConversation}: ChatAreaProps) {
+	const { data: session } = useSession();
     const [message, setMessage] = useState("");
     const currentMessages =
 			mockMessages[selectedChat as keyof typeof mockMessages] || [];
@@ -95,6 +92,13 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 				handleSendMessage();
 			}
 		};
+
+		const userId = session?.user?.dbId;
+		const otherParticipant = currentConversation?.participants.find(
+			(p) => p.id !== userId
+		);
+
+		if (!userId) return null;
   return (
 		<div
 			className={`flex-1 flex flex-col h-full ${
@@ -115,17 +119,22 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 						</Button>
 						<div className="relative">
 							<Avatar className="w-10 h-10">
-								<AvatarImage src={currentConversation.avatar} />
-								<AvatarFallback>{currentConversation.name[0]}</AvatarFallback>
+								<AvatarImage
+									src={otherParticipant?.imageUrl || "./favicon.ico"}
+								/>
+								<AvatarFallback>
+									<FontAwesomeIcon icon={faGithub} />
+								</AvatarFallback>
 							</Avatar>
-							{currentConversation.online && (
+							{!currentConversation && ( // TODO: Replace with real online status
 								<div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
 							)}
 						</div>
 						<div>
 							<h3>{currentConversation.name}</h3>
 							<p className="text-sm text-muted-foreground">
-								{currentConversation.online ? "Online" : "Last seen 1d ago"}
+								{currentConversation ? "Online" : "Last seen 1d ago"}{" "}
+								{/* TODO: *** */}
 							</p>
 						</div>
 					</div>
@@ -177,8 +186,12 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 							</div>
 							{msg.senderId !== "me" && (
 								<Avatar className="w-8 h-8 order-1 mr-2">
-									<AvatarImage src={currentConversation.avatar} />
-									<AvatarFallback>{currentConversation.name[0]}</AvatarFallback>
+									<AvatarImage
+										src={otherParticipant?.imageUrl || "./favicon.ico"}
+									/>
+									<AvatarFallback>
+										<FontAwesomeIcon icon={faGithub} />
+									</AvatarFallback>
 								</Avatar>
 							)}
 						</div>

@@ -15,9 +15,9 @@ import { signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { GitHubConnections, RepoType } from "@/types/github";
 import { DBConversation } from "@/db/schema";
+import { DMConversation } from "@/types/db-customs";
 
 export default function UserPage() {
-	const [user, setUser] = useState<any>(null);
 	const [currentSection, setCurrentSection] = useState("dashboard");
 	const [privateChatId, setPrivateChatId] = useState<string | null>(null);
 	const [languages, setLanguages] = useState<string[]>([]);
@@ -29,42 +29,11 @@ export default function UserPage() {
 	const [selectedRoom, setSelectedRoom] = useState<DBConversation | null>(null);
 	const [githubConnections, setGitHubConnections] = useState<GitHubConnections | null>(null);
 	const [loadingConnections, setLoadingConnections] = useState(true);
+	const [dms, setDms] = useState<DMConversation[]>([]);
+	const [loadingDms, setLoadingDms] = useState(true);
 	const { data: session, status } = useSession();
 
-	// Mock GitHub login
-	const mockUser = {
-		id: "123",
-		login: "devuser",
-		name: "Alex Developer",
-		avatar_url:
-			"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-		bio: "Full-stack developer passionate about open source",
-		public_repos: 42,
-		followers: 156,
-		following: 98,
-		languages: ["JavaScript", "TypeScript", "React", "Node.js", "Python"],
-		repos: [
-			{
-				id: 1,
-				name: "awesome-react-components",
-				description: "A collection of reusable React components",
-				language: "TypeScript",
-				stars: 234,
-				forks: 45,
-			},
-			{
-				id: 2,
-				name: "api-gateway-middleware",
-				description: "Express middleware for API rate limiting and auth",
-				language: "Node.js",
-				stars: 89,
-				forks: 23,
-			},
-		],
-	};
-
 	useEffect(() => {
-		setUser(mockUser);
 		if (status === "unauthenticated") redirect("/welcome");
 
 		const fetchLanguages = async () => {
@@ -127,6 +96,21 @@ export default function UserPage() {
 		};
 		fetchConnections();
 
+		const fetchDms = async () => {
+			try {
+				const res = await fetch("/api/db/users/conversations/me");
+				if (res.ok) {
+					const data = await res.json();
+					setDms(data);
+				}
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoadingDms(false);
+			}
+		};
+		fetchDms();
+
 	}, [status]);
 
 	const handleLogout = () => {
@@ -151,7 +135,6 @@ export default function UserPage() {
 				return (
 					<Dashboard
 						session={session}
-						user={user}
 						repoCount={repos.length}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
@@ -162,7 +145,9 @@ export default function UserPage() {
 			case "messages":
 				return (
 					<DirectMessages
-						chatId={privateChatId || undefined}
+						dms={dms}
+						loadingDms={loadingDms}
+						chatId={privateChatId}
 						onBack={handleBackFromMessages}
 					/>
 				);
@@ -191,7 +176,6 @@ export default function UserPage() {
 				return (
 					<Dashboard
 						session={session}
-						user={user}
 						repoCount={repos.length}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}

@@ -11,7 +11,6 @@ import { MessageCircle, Users, TrendingUp } from "lucide-react";
 
 interface DashboardProps {
 	session: Session | null;
-	user: any;
 	repoCount: number;
 	onSectionChange: (section: string) => void;
 	onStartPrivateChat: (userId: string) => void;
@@ -19,13 +18,12 @@ interface DashboardProps {
 
 export default function Dashboard({
 	session,
-	user,
 	repoCount,
 	onSectionChange,
 	onStartPrivateChat,
 }: DashboardProps) {
 
-	if (!user) return null;
+	if (!session) return null;
 
 	return (
 		<div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-purple-50 to-orange-50">

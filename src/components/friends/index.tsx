@@ -163,7 +163,7 @@ export default function Friends({
 			if (!userStatus[user.username]) {
 				setUserStatus((prev) => ({ ...prev, [user.username]: "loading" }));
 
-				fetch(`/api/users/check-existence/${user.username}`)
+				fetch(`/api/db/users/check-existence/${user.username}`)
 					.then((res) => res.json())
 					.then((data) => {
 						setUserStatus((prev) => ({
@@ -373,7 +373,7 @@ export default function Friends({
 														size="sm"
 														variant="outline"
 														onClick={() => console.log("Invite", conn.username)}
-														className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+														className="flex-1 border-purple-200 hover:bg-purple-50 cursor-pointer"
 													>
 														<Mail className="w-4 h-4 mr-2" /> Invite
 													</Button>
@@ -387,7 +387,7 @@ export default function Friends({
 													<Button
 														variant="outline"
 														size="sm"
-														className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+														className="flex-1 border-purple-200 hover:bg-purple-50 cursor-pointer"
 													>
 														<FontAwesomeIcon
 															icon={faGithub}
@@ -465,7 +465,7 @@ export default function Friends({
 													size="sm"
 													variant="outline"
 													onClick={() => console.log("Invite", conn.username)}
-													className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+													className="flex-1 border-purple-200 hover:bg-purple-50 cursor-pointer"
 												>
 													<Mail className="w-4 h-4 mr-2" /> Invite
 												</Button>
@@ -479,7 +479,7 @@ export default function Friends({
 												<Button
 													variant="outline"
 													size="sm"
-													className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+													className="flex-1 border-purple-200 hover:bg-purple-50 cursor-pointer"
 												>
 													<FontAwesomeIcon
 														icon={faGithub}

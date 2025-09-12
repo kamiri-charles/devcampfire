@@ -4,61 +4,67 @@ import { Input } from "../ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
 import { Badge } from "../ui/badge";
-import { Send, ArrowLeft, Search } from "lucide-react";
+import { Send, ArrowLeft, Search, Loader2 } from "lucide-react";
 import { ChatArea } from "./chat-area";
+import { DMConversation } from "@/types/db-customs";
+import { useSession } from "next-auth/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { formatDistanceToNow } from "date-fns";
 
 interface DirectMessagesProps {
-	chatId?: string;
+	dms: DMConversation[];
+	loadingDms: boolean;
+	chatId: string | null;
 	onBack: () => void;
 }
 
-const mockConversations = [
-	{
-		id: "sarah",
-		name: "Sarah Chen",
-		avatar:
-			"https://images.unsplash.com/photo-1494790108755-2616b5b2aca3?w=400&h=400&fit=crop&crop=face",
-		lastMessage: "Thanks for the code review feedback!",
-		lastMessageTime: "1h ago",
-		unreadCount: 0,
-		online: true,
-	},
-	{
-		id: "mike",
-		name: "Mike Rodriguez",
-		avatar:
-			"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-		lastMessage: "Want to collaborate on that API project?",
-		lastMessageTime: "2h ago",
-		unreadCount: 2,
-		online: true,
-	},
-	{
-		id: "emma",
-		name: "Emma Wilson",
-		avatar:
-			"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-		lastMessage: "The ML model is working great!",
-		lastMessageTime: "1d ago",
-		unreadCount: 0,
-		online: false,
-	},
-];
 
 export default function DirectMessages({
+	dms,
+	loadingDms,
 	chatId,
 	onBack,
 }: DirectMessagesProps) {
+	const { data: session } = useSession();
 	const [selectedChat, setSelectedChat] = useState(chatId);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const currentConversation = mockConversations.find(
-		(conv) => conv.id === selectedChat
+	const currentConversation = dms.find((conv) => conv.id === selectedChat);
+
+	const filteredConversations = dms.filter((conv) =>
+		// Use either name or participant usernames if name is null
+		(conv.name ?? conv.participants.map((p) => p.githubUsername).join(" "))
+			.toLowerCase()
+			.includes(searchQuery.toLowerCase())
 	);
 
-	const filteredConversations = mockConversations.filter((conv) =>
-		conv.name.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	if (loadingDms) {
+		return (
+			<div className="flex-1 flex items-center justify-center">
+				<Loader2 className="animate-spin mr-2" />
+				<p>Loading conversations...</p>
+			</div>
+		);
+	}
+
+	if (dms.length === 0) {
+		return (
+			<div className="flex-1 flex flex-col items-center justify-center bg-muted/20 p-4">
+				<div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mb-4">
+					<Send className="w-8 h-8 text-white" />
+				</div>
+				<h3 className="mb-2">No conversations yet</h3>
+				<p className="text-center text-muted-foreground mb-4">
+					You have no direct message conversations. Start a new conversation to
+					connect with other developers!
+				</p>
+				<Button variant="outline" className="cursor-pointer">
+					Find Friends
+				</Button>
+			</div>
+		)
+	}
 
 
 	return (
@@ -81,12 +87,6 @@ export default function DirectMessages({
 							</Button>
 							<span>Messages</span>
 						</h2>
-						<Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0">
-							{mockConversations.reduce(
-								(sum, conv) => sum + conv.unreadCount,
-								0
-							)}
-						</Badge>
 					</div>
 					<div className="relative">
 						<Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -101,47 +101,67 @@ export default function DirectMessages({
 
 				<ScrollArea className="flex-1">
 					<div className="p-2">
-						{filteredConversations.map((conversation) => (
-							<div
-								key={conversation.id}
-								className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-									selectedChat === conversation.id
-										? "bg-gradient-to-r from-purple-100 to-purple-200 border border-purple-300"
-										: "hover:bg-purple-50 hover:border hover:border-purple-200 border border-transparent"
-								}`}
-								onClick={() => setSelectedChat(conversation.id)}
-							>
-								<div className="relative">
-									<Avatar className="w-12 h-12">
-										<AvatarImage src={conversation.avatar} />
-										<AvatarFallback>{conversation.name[0]}</AvatarFallback>
-									</Avatar>
-									{conversation.online && (
-										<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-									)}
-								</div>
-								<div className="flex-1 min-w-0">
-									<div className="flex items-center justify-between">
-										<h3 className="truncate font-medium text-gray-900">
-											{conversation.name}
-										</h3>
-										<div className="flex items-center space-x-1">
-											{conversation.unreadCount > 0 && (
-												<Badge className="bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 text-xs">
-													{conversation.unreadCount}
-												</Badge>
-											)}
-											<span className="text-xs text-gray-500">
-												{conversation.lastMessageTime}
-											</span>
-										</div>
+						{filteredConversations.map((conversation) => {
+							const currentUserId = session?.user.dbId;
+
+							const otherParticipant = currentConversation?.participants.find(
+								(p) => p.id !== currentUserId
+							);
+
+							return (
+								<div
+									key={conversation.id}
+									className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
+										selectedChat === conversation.id
+											? "bg-gradient-to-r from-purple-100 to-purple-200 border border-purple-300"
+											: "hover:bg-purple-50 hover:border hover:border-purple-200 border border-transparent"
+									}`}
+									onClick={() => setSelectedChat(conversation.id)}
+								>
+									<div className="relative">
+										<Avatar className="w-12 h-12">
+											<AvatarImage
+												src={otherParticipant?.imageUrl || "./favicon.ico"}
+											/>
+											<AvatarFallback>
+												<FontAwesomeIcon icon={faUser} />
+											</AvatarFallback>
+										</Avatar>
+										{!otherParticipant && ( // TODO: Fix online status
+											<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+										)}
 									</div>
-									<p className="text-sm text-gray-600 truncate">
-										{conversation.lastMessage}
-									</p>
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center justify-between">
+											<h3 className="truncate font-medium text-gray-900">
+												{conversation.name}
+											</h3>
+											<div className="flex items-center space-x-1">
+												{/* {conversation.unreadCount > 0 && (
+													<Badge className="bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 text-xs">
+														{conversation.unreadCount}
+													</Badge>
+												)} */}
+												<span className="text-xs text-gray-500">
+													{currentConversation?.latestMessage
+														? `${formatDistanceToNow(
+																new Date(
+																	currentConversation.latestMessage.createdAt
+																),
+																{ addSuffix: true }
+														  )}`
+														: "No messages yet"}
+												</span>
+											</div>
+										</div>
+										<p className="text-sm text-gray-600 truncate">
+											{currentConversation?.latestMessage?.content ??
+												"No messages yet"}
+										</p>
+									</div>
 								</div>
-							</div>
-						))}
+							);
+						})}
 					</div>
 				</ScrollArea>
 			</div>
