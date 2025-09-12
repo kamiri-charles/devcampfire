@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { Input } from "../ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Loader2, MessageCircle, Search } from "lucide-react";
+import { Loader2, Mail, MessageCircle, Search } from "lucide-react";
 import {
 	GitHubConnections,
 	GitHubUserEnriched,
@@ -24,22 +24,6 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { getPaginationRange } from "@/lib/utils";
 import Link from "next/link";
 
-interface Friend {
-	id: string;
-	name: string;
-	username: string;
-	avatar: string;
-	status: "online" | "offline" | "away";
-	languages: string[];
-	bio: string;
-	followers: number;
-	following: number;
-	publicRepos: number;
-	lastActive: string;
-	isFollowing: boolean;
-	mutualFriends: number;
-}
-
 interface FriendsProps {
 	connections: GitHubConnections | null;
 	loadingConnections: boolean;
@@ -58,6 +42,10 @@ export default function Friends({
 	const [enrichedUsers, setEnrichedUsers] = useState<
 		Record<string, GitHubUserEnriched>
 	>({});
+	const [userStatus, setUserStatus] = useState<
+		Record<string, "loading" | "exists" | "not-found">
+	>({});
+
 
 	// Decide which list to use
 	const currentList: GitHubUserLite[] = useMemo(() => {
@@ -73,7 +61,7 @@ export default function Friends({
 			case "in-app":
 				return []; // TODO: add filter later
 			default:
-				return connections.followers; // or mutuals, whichever makes sense as "default"
+				return connections.followers;
 		}
 	}, [activeTab, connections]);
 
@@ -152,6 +140,30 @@ export default function Friends({
 
 		fetchEnrichment();
 	}, [paginatedList, enrichedUsers]);
+
+	useEffect(() => {
+		paginatedList.forEach((user) => {
+			if (!userStatus[user.username]) {
+				setUserStatus((prev) => ({ ...prev, [user.username]: "loading" }));
+
+				fetch(`/api/users/check-existence/${user.username}`)
+					.then((res) => res.json())
+					.then((data) => {
+						setUserStatus((prev) => ({
+							...prev,
+							[user.username]: data.exists ? "exists" : "not-found",
+						}));
+					})
+					.catch(() => {
+						setUserStatus((prev) => ({
+							...prev,
+							[user.username]: "not-found",
+						}));
+					});
+			}
+		});
+	}, [paginatedList, userStatus]);
+
 
 	useEffect(() => {
 		setPage(1);
@@ -329,14 +341,32 @@ export default function Friends({
 											</p>
 
 											<div className="flex space-x-2">
-												<Button
-													size="sm"
-													onClick={() => console.log("Start chat")} // TODO: implement
-													className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
-												>
-													<MessageCircle className="w-4 h-4 mr-2" />
-													Message
-												</Button>
+												{userStatus[conn.username] === "loading" ? (
+													<Button size="sm" disabled>
+														<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+														Loading...
+													</Button>
+												) : userStatus[conn.username] === "exists" ? (
+													<Button
+														size="sm"
+														onClick={() =>
+															console.log("Start chat with", conn.username)
+														}
+														className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
+													>
+														<MessageCircle className="w-4 h-4 mr-2" /> Message
+													</Button>
+												) : (
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() => console.log("Invite", conn.username)}
+														className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+													>
+														<Mail className="w-4 h-4 mr-2" /> Invite
+													</Button>
+												)}
+
 												<Link
 													href={`https://github.com/${conn.username}`}
 													target="_blank"
@@ -406,21 +436,45 @@ export default function Friends({
 										</p>
 
 										<div className="flex space-x-2">
-											<Button
-												size="sm"
-												onClick={() => console.log("Start chat")} // TODO: implement
-												className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
+											{userStatus[conn.username] === "loading" ? (
+												<Button size="sm" disabled>
+													<Loader2 className="animate-spin w-4 h-4 mr-2" /> Loading...
+												</Button>
+											) : userStatus[conn.username] === "exists" ? (
+												<Button
+													size="sm"
+													onClick={() =>
+														console.log("Start chat with", conn.username)
+													}
+													className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
+												>
+													<MessageCircle className="w-4 h-4 mr-2" /> Message
+												</Button>
+											) : (
+												<Button
+													size="sm"
+													variant="outline"
+													onClick={() => console.log("Invite", conn.username)}
+													className="border-purple-200 hover:bg-purple-50 cursor-pointer"
+												>
+													<Mail className="w-4 h-4 mr-2" /> Invite
+												</Button>
+											)}
+
+											<Link
+												href={`https://github.com/${conn.username}`}
+												target="_blank"
+												rel="noopener noreferrer"
 											>
-												<MessageCircle className="w-4 h-4 mr-2" />
-												Message
-											</Button>
-											<Link href={`https://github.com/${conn.username}`} target="_blank" rel="noopener noreferrer">
 												<Button
 													variant="outline"
 													size="sm"
 													className="border-purple-200 hover:bg-purple-50 cursor-pointer"
 												>
-													<FontAwesomeIcon icon={faGithub} className="w-4 h-4" />
+													<FontAwesomeIcon
+														icon={faGithub}
+														className="w-4 h-4"
+													/>
 												</Button>
 											</Link>
 										</div>
