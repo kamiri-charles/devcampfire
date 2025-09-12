@@ -3,12 +3,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { ArrowLeft, Phone, Video, MoreVertical, Send } from "lucide-react";
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Loader2 } from "lucide-react";
 import { DMConversation, DMMessage } from "@/types/db-customs";
 import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import { pusherClient } from "@/lib/pusher-client";
 
 interface ChatAreaProps {
 	dmId: string;
@@ -16,76 +18,41 @@ interface ChatAreaProps {
 	currentConversation: DMConversation;
 }
 
-const mockMessages = {
-	sarah: [
-		{
-			id: 1,
-			senderId: "sarah",
-			senderName: "Sarah Chen",
-			content:
-				"Hey! I saw your latest commit on the React components library. Really clean implementation!",
-			timestamp: "2 hours ago",
-			type: "text",
-		},
-		{
-			id: 2,
-			senderId: "me",
-			senderName: "You",
-			content:
-				"Thanks! I tried to keep it simple and reusable. Did you get a chance to test it?",
-			timestamp: "1 hour ago",
-			type: "text",
-		},
-		{
-			id: 3,
-			senderId: "sarah",
-			senderName: "Sarah Chen",
-			content:
-				"Yes! Everything works perfectly. Just one small suggestion - maybe add TypeScript interfaces for the props?",
-			timestamp: "1 hour ago",
-			type: "text",
-		},
-		{
-			id: 4,
-			senderId: "me",
-			senderName: "You",
-			content:
-				"Great idea! I'll add those interfaces this afternoon. Thanks for the review! 🙏",
-			timestamp: "45 minutes ago",
-			type: "text",
-		},
-	],
-	mike: [
-		{
-			id: 1,
-			senderId: "mike",
-			senderName: "Mike Rodriguez",
-			content:
-				"Hey! I've been working on a microservices architecture for a new project. Want to collaborate?",
-			timestamp: "3 hours ago",
-			type: "text",
-		},
-		{
-			id: 2,
-			senderId: "mike",
-			senderName: "Mike Rodriguez",
-			content: "It's using Node.js, Docker, and AWS. Right up your alley!",
-			timestamp: "2 hours ago",
-			type: "text",
-		},
-	],
-};
-
-export function ChatArea({dmId, setDmId, currentConversation}: ChatAreaProps) {
+export function ChatArea({
+	dmId,
+	setDmId,
+	currentConversation,
+}: ChatAreaProps) {
 	const { data: session } = useSession();
 	const [messages, setMessages] = useState<DMMessage[]>([]);
+	const [loadingMessages, setLoadingMessages] = useState(true);
 	const [message, setMessage] = useState("");
-	
 
-	const handleSendMessage = () => {
-		if (!message.trim()) return;
+	const handleSendMessage = async () => {
+		if (!message.trim() || !dmId) return;
+
+		const content = message.trim();
+
+		// Optimistic clear input
 		setMessage("");
+
+		try {
+			const res = await fetch(`/api/db/messages/dms/${dmId}`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ content }),
+			});
+
+			if (!res.ok) {
+				console.error("Failed to send message");
+				toast.error("Failed to send message");
+				return;
+			}
+		} catch (err) {
+			console.error("Error sending message:", err);
+		}
 	};
+
 
 	const handleKeyPress = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && !e.shiftKey) {
@@ -99,27 +66,52 @@ export function ChatArea({dmId, setDmId, currentConversation}: ChatAreaProps) {
 		(p) => p.id !== userId
 	);
 
-	
-
-		useEffect(() => {
-			const fetchMessages = async () => {
-				try {
-					const res = await fetch(
-						`/api/db/messages/dms/${dmId}`
-					);
-					if (!res.ok) {
-						console.error("Failed to fetch messages");
-						return;
-					}
-					const data = await res.json();
-					setMessages(data);
-				} catch (err) {
-					console.error("Error fetching messages:", err);
+	useEffect(() => {
+		const fetchMessages = async () => {
+			try {
+				const res = await fetch(`/api/db/messages/dms/${dmId}`);
+				if (!res.ok) {
+					console.error("Failed to fetch messages");
+					return;
 				}
+				const data = await res.json();
+				setMessages(data);
+			} catch (err) {
+				console.error("Error fetching messages:", err);
+			} finally {
+				setLoadingMessages(false);
 			}
-		}, [])
+		};
+		if (dmId) {
+			fetchMessages();
+		}
+	}, []);
+
+	useEffect(() => {
+		if (!dmId) return;
+
+		const channel = pusherClient.subscribe(`conversation-${dmId}`);
+
+		channel.bind("message:new", (message: DMMessage) => {
+			setMessages((prev) => [...prev, message]);
+		});
+
+		return () => {
+			pusherClient.unsubscribe(`conversation-${dmId}`);
+		};
+	}, [dmId]);
+
 
 	if (!userId) return null;
+	
+	if (loadingMessages) return (
+	<div className="flex-1">
+		<div className="flex flex-col items-center justify-center h-full">
+			<Loader2 className="animate-spin" />
+			<p className="text-muted-foreground">Loading messages...</p>
+		</div>
+	</div>);
+
 	return (
 		<div
 			className={`flex-1 flex flex-col h-full ${
@@ -205,7 +197,9 @@ export function ChatArea({dmId, setDmId, currentConversation}: ChatAreaProps) {
 											: "text-left"
 									}`}
 								>
-									{formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+									{formatDistanceToNow(new Date(msg.createdAt), {
+										addSuffix: true,
+									})}
 								</p>
 							</div>
 							{msg.sender.id !== session.user.dbId && (
@@ -229,7 +223,7 @@ export function ChatArea({dmId, setDmId, currentConversation}: ChatAreaProps) {
 					<Input
 						value={message}
 						onChange={(e) => setMessage(e.target.value)}
-						onKeyPress={handleKeyPress}
+						onKeyDown={handleKeyPress}
 						placeholder={`Message ${currentConversation.name}...`}
 						className="flex-1"
 					/>
