@@ -36,6 +36,19 @@ export default function UserPage() {
 	useEffect(() => {
 		if (status === "unauthenticated") redirect("/welcome");
 
+		const updateStatus = async () => {
+			try {
+				await fetch("/api/db/users/status", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ status: "online" }),
+				});
+			} catch (e) {
+				console.error(e);
+			}
+		};
+		updateStatus();
+
 		const fetchLanguages = async () => {
 			try {
 				const res = await fetch("/api/github/languages");
@@ -98,7 +111,7 @@ export default function UserPage() {
 
 		const fetchDms = async () => {
 			try {
-				const res = await fetch("/api/db/users/conversations/me");
+				const res = await fetch(`/api/db/users/conversations/${session?.user?.dbId}`);
 				if (res.ok) {
 					const data = await res.json();
 					setDms(data);
@@ -111,7 +124,22 @@ export default function UserPage() {
 		};
 		fetchDms();
 
-	}, [status]);
+		// Before unload, set status to offline
+		const handleBeforeUnload = async () => {
+			try {
+				await fetch("/api/db/users/status", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ status: "offline" }),
+				});
+			} catch (e) {
+				console.error(e);
+			}
+		};
+		
+		window.addEventListener("beforeunload", handleBeforeUnload);
+
+	}, [status, session]);
 
 	const handleLogout = () => {
 		setCurrentSection("dashboard");

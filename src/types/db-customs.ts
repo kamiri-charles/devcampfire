@@ -3,6 +3,7 @@ export type DMParticipant = {
 	name: string | null;
 	githubUsername: string;
 	imageUrl: string | null;
+	status: string;
 };
 
 export type DMLatestMessage = {
@@ -21,4 +22,20 @@ export type DMConversation = {
 	updatedAt: string;
 	participants: DMParticipant[];
 	latestMessage: DMLatestMessage | null;
+	unreadCount: number;
+};
+
+export type DMSender = {
+	id: string;
+	name: string | null;
+	imageUrl: string | null;
+	githubUsername: string | null;
+};
+
+export type DMMessage = {
+	id: string;
+	content: string;
+	createdAt: string;
+	updatedAt: string;
+	sender: DMSender;
 };

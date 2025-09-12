@@ -92,7 +92,27 @@ export const messages = pgTable("messages", {
 		.notNull(),
 });
 
+export const conversationReads = pgTable("conversation_reads", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	conversationId: uuid("conversation_id")
+		.references(() => conversations.id, { onDelete: "cascade" })
+		.notNull(),
+	userId: uuid("user_id")
+		.references(() => users.id, { onDelete: "cascade" })
+		.notNull(),
+	lastReadMessageId: uuid("last_read_message_id").references(
+		() => messages.id,
+		{
+			onDelete: "set null",
+		}
+	),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+});
 
+
+// Types
 export type DBUser = typeof users.$inferSelect;
 export type DBNewUser = typeof users.$inferInsert;
 
@@ -112,3 +132,6 @@ export type DBMessageWithSender = DBMessage & {
 		githubUsername: string | null;
 	};
 };
+
+export type DBConversationRead = typeof conversationReads.$inferSelect;
+export type DBNewConversationRead = typeof conversationReads.$inferInsert;

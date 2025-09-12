@@ -1,17 +1,18 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ArrowLeft, Phone, Video, MoreVertical, Send } from "lucide-react";
-import { DMConversation } from "@/types/db-customs";
+import { DMConversation, DMMessage } from "@/types/db-customs";
 import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { formatDistanceToNow } from "date-fns";
 
 interface ChatAreaProps {
-	selectedChat: string;
-	setSelectedChat: Dispatch<SetStateAction<string | null>>;
+	dmId: string;
+	setDmId: Dispatch<SetStateAction<string | null>>;
 	currentConversation: DMConversation;
 }
 
@@ -75,34 +76,54 @@ const mockMessages = {
 	],
 };
 
-export function ChatArea({selectedChat, setSelectedChat, currentConversation}: ChatAreaProps) {
+export function ChatArea({dmId, setDmId, currentConversation}: ChatAreaProps) {
 	const { data: session } = useSession();
-    const [message, setMessage] = useState("");
-    const currentMessages =
-			mockMessages[selectedChat as keyof typeof mockMessages] || [];
+	const [messages, setMessages] = useState<DMMessage[]>([]);
+	const [message, setMessage] = useState("");
+	
 
-    const handleSendMessage = () => {
-			if (!message.trim()) return;
-			setMessage("");
-		};
+	const handleSendMessage = () => {
+		if (!message.trim()) return;
+		setMessage("");
+	};
 
-		const handleKeyPress = (e: React.KeyboardEvent) => {
-			if (e.key === "Enter" && !e.shiftKey) {
-				e.preventDefault();
-				handleSendMessage();
+	const handleKeyPress = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter" && !e.shiftKey) {
+			e.preventDefault();
+			handleSendMessage();
+		}
+	};
+
+	const userId = session?.user?.dbId;
+	const otherParticipant = currentConversation?.participants.find(
+		(p) => p.id !== userId
+	);
+
+	
+
+		useEffect(() => {
+			const fetchMessages = async () => {
+				try {
+					const res = await fetch(
+						`/api/db/messages/dms/${dmId}`
+					);
+					if (!res.ok) {
+						console.error("Failed to fetch messages");
+						return;
+					}
+					const data = await res.json();
+					setMessages(data);
+				} catch (err) {
+					console.error("Error fetching messages:", err);
+				}
 			}
-		};
+		}, [])
 
-		const userId = session?.user?.dbId;
-		const otherParticipant = currentConversation?.participants.find(
-			(p) => p.id !== userId
-		);
-
-		if (!userId) return null;
-  return (
+	if (!userId) return null;
+	return (
 		<div
 			className={`flex-1 flex flex-col h-full ${
-				selectedChat ? "flex" : "hidden md:flex"
+				dmId ? "flex" : "hidden md:flex"
 			}`}
 		>
 			{/* Chat Header */}
@@ -112,7 +133,7 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setSelectedChat("")}
+							onClick={() => setDmId(null)}
 							className="md:hidden"
 						>
 							<ArrowLeft className="w-4 h-4" />
@@ -126,15 +147,14 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 									<FontAwesomeIcon icon={faGithub} />
 								</AvatarFallback>
 							</Avatar>
-							{!currentConversation && ( // TODO: Replace with real online status
+							{otherParticipant?.status === "online" && (
 								<div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
 							)}
 						</div>
 						<div>
 							<h3>{currentConversation.name}</h3>
 							<p className="text-sm text-muted-foreground">
-								{currentConversation ? "Online" : "Last seen 1d ago"}{" "}
-								{/* TODO: *** */}
+								{otherParticipant?.status === "online" ? "Online" : ""}
 							</p>
 						</div>
 					</div>
@@ -155,21 +175,23 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 			{/* Messages */}
 			<ScrollArea className="flex-1 p-4 min-h-[70vh]">
 				<div className="space-y-4">
-					{currentMessages.map((msg) => (
+					{messages.map((msg) => (
 						<div
 							key={msg.id}
 							className={`flex ${
-								msg.senderId === "me" ? "justify-end" : "justify-start"
+								msg.sender.id === session.user.dbId
+									? "justify-end"
+									: "justify-start"
 							}`}
 						>
 							<div
 								className={`max-w-xs md:max-w-md ${
-									msg.senderId === "me" ? "order-2" : "order-1"
+									msg.sender.id === session.user.dbId ? "order-2" : "order-1"
 								}`}
 							>
 								<div
 									className={`p-3 rounded-lg ${
-										msg.senderId === "me"
+										msg.sender.id === session.user.dbId
 											? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
 											: "bg-muted"
 									}`}
@@ -178,13 +200,15 @@ export function ChatArea({selectedChat, setSelectedChat, currentConversation}: C
 								</div>
 								<p
 									className={`text-xs text-muted-foreground mt-1 ${
-										msg.senderId === "me" ? "text-right" : "text-left"
+										msg.sender.id === session.user.dbId
+											? "text-right"
+											: "text-left"
 									}`}
 								>
-									{msg.timestamp}
+									{formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
 								</p>
 							</div>
-							{msg.senderId !== "me" && (
+							{msg.sender.id !== session.user.dbId && (
 								<Avatar className="w-8 h-8 order-1 mr-2">
 									<AvatarImage
 										src={otherParticipant?.imageUrl || "./favicon.ico"}

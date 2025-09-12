@@ -1,10 +1,11 @@
-import { eq, and, inArray, sql } from "drizzle-orm";
+import { eq, and, inArray, sql, gt } from "drizzle-orm";
 import { db } from "@/index";
 import {
 	conversations,
 	conversationParticipants,
 	messages,
 	users,
+	conversationReads,
 } from "@/db/schema";
 
 export async function GET(req: Request) {
@@ -57,6 +58,29 @@ export async function GET(req: Request) {
 					.orderBy(sql`${messages.createdAt} DESC`)
 					.limit(1);
 
+				const [readRow] = await db
+					.select()
+					.from(conversationReads)
+					.where(
+						and(
+							eq(conversationReads.conversationId, conv.id),
+							eq(conversationReads.userId, userId)
+						)
+					);
+
+				// Count unread messages
+				const unreadCount = latestMsg
+					? await db
+							.select({ count: sql<number>`count(*)` })
+							.from(messages)
+							.where(
+								and(
+									eq(messages.conversationId, conv.id),
+									gt(messages.createdAt, readRow?.updatedAt ?? new Date(0))
+								)
+							)
+					: 0;
+
 				return {
 					...conv,
 					participants: participants.map((p) => ({
@@ -64,6 +88,7 @@ export async function GET(req: Request) {
 						name: p.users.name,
 						githubUsername: p.users.githubUsername,
 						imageUrl: p.users.imageUrl,
+						status: p.users.status
 					})),
 					latestMessage: latestMsg
 						? {
@@ -73,6 +98,7 @@ export async function GET(req: Request) {
 								createdAt: latestMsg.createdAt,
 						  }
 						: null,
+					unreadCount,
 				};
 			})
 		);

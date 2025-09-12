@@ -1,11 +1,11 @@
 import { db } from "@/index";
 import { messages, users, conversations } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 
-export async function GET(req: NextRequest, { params } : {params: Promise<{conversation_id: string}>}) {
+export async function GET(_req: NextRequest, { params } : {params: Promise<{conversation_id: string}>}) {
 	const conversation_id = (await params).conversation_id;
 	try {
 		const session = await auth();
@@ -14,7 +14,6 @@ export async function GET(req: NextRequest, { params } : {params: Promise<{conve
 				status: 401,
 			});
 		}
-
 
 		const convo = await db
 			.select()
@@ -44,7 +43,7 @@ export async function GET(req: NextRequest, { params } : {params: Promise<{conve
 			.from(messages)
 			.innerJoin(users, eq(messages.senderId, users.id))
 			.where(eq(messages.conversationId, conversation_id))
-			.orderBy(desc(messages.createdAt));
+			.orderBy(asc(messages.createdAt));
 
 		return new NextResponse(JSON.stringify(convoMessages), { status: 200 });
 	} catch (err) {
