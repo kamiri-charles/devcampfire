@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
@@ -27,11 +27,15 @@ import Link from "next/link";
 interface FriendsProps {
 	connections: GitHubConnections | null;
 	loadingConnections: boolean;
+	setActiveSection: Dispatch<SetStateAction<string>>;
+	setChatId: Dispatch<SetStateAction<string | null>>;
 }
 
 export default function Friends({
 	connections,
 	loadingConnections,
+	setActiveSection,
+	setChatId
 }: FriendsProps) {
 	const [activeTab, setActiveTab] = useState<
 		"mutual" | "following" | "followers" | "in-app"
@@ -45,6 +49,7 @@ export default function Friends({
 	const [userStatus, setUserStatus] = useState<
 		Record<string, "loading" | "exists" | "not-found">
 	>({});
+	const [inAppUsers, setInAppUsers] = useState<GitHubUserLite[]>([]);
 
 
 	// Decide which list to use
@@ -59,7 +64,7 @@ export default function Friends({
 			case "followers":
 				return connections.followers;
 			case "in-app":
-				return []; // TODO: add filter later
+				return inAppUsers;
 			default:
 				return connections.followers;
 		}
@@ -78,7 +83,7 @@ export default function Friends({
 					...connections.followers,
 					...connections.following,
 					...connections.mutuals,
-					// TODO: later add in-app when ready
+					...inAppUsers,
 				].map((u) => [u.id, u])
 			).values()
 		);
@@ -110,7 +115,7 @@ export default function Friends({
 
 	async function openDM(targetUsername: string) {
 		try {
-			const res = await fetch("/api/conversations", {
+			const res = await fetch("/api/db/conversations", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ targetUsername }),
@@ -118,13 +123,15 @@ export default function Friends({
 
 			const data = await res.json();
 			if (data.conversationId) {
-				console.log("Open DM with ID:", data.conversationId);
+				setActiveSection("dms");
+				setChatId(data.conversationId);
 			}
 		} catch (err) {
 			console.error("Failed to open DM:", err);
 		}
 	}
 
+	// Fetch enriched data for displayed users
 	useEffect(() => {
 		const fetchEnrichment = async () => {
 			const missing = paginatedList.filter((u) => !enrichedUsers[u.username]);
@@ -158,6 +165,7 @@ export default function Friends({
 		fetchEnrichment();
 	}, [paginatedList, enrichedUsers]);
 
+	// Check if users exist in app
 	useEffect(() => {
 		paginatedList.forEach((user) => {
 			if (!userStatus[user.username]) {
@@ -181,7 +189,49 @@ export default function Friends({
 		});
 	}, [paginatedList, userStatus]);
 
+	// Fetch in-app users from connections
+	useEffect(() => {
+		if (!connections) return;
 
+		const usernames = [
+			...connections.followers,
+			...connections.following,
+			...connections.mutuals,
+		].map((u) => u.username);
+
+		if (usernames.length === 0) return;
+
+		(async () => {
+			try {
+				const res = await fetch("/api/github/in-app-users", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ usernames }),
+				});
+				const data = await res.json();
+				// Only keep matching GitHubUserLite from connections
+				const mapped = usernames
+					.map((uname) =>
+						[
+							...connections.followers,
+							...connections.following,
+							...connections.mutuals,
+						].find((u) => u.username === uname)
+					)
+					.filter(Boolean) as GitHubUserLite[];
+
+				const inApp = mapped.filter((u) =>
+					data.users.some((dbU: any) => dbU.githubUsername === u.username)
+				);
+
+				setInAppUsers(inApp);
+			} catch (err) {
+				console.error("Failed to fetch in-app users:", err);
+			}
+		})();
+	}, [connections]);
+
+	// Reset to first page on tab or search change
 	useEffect(() => {
 		setPage(1);
 	}, [activeTab, searchQuery]);
@@ -259,7 +309,7 @@ export default function Friends({
 							onClick={() => setActiveTab("in-app")}
 							className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 cursor-pointer hover:bg-purple-50"
 						>
-							In-App (0)
+							In-App ({inAppUsers.length})
 						</TabsTrigger>
 					</TabsList>
 				)}

@@ -54,7 +54,7 @@ const mainNavItems = [
     isActive: false
   },
   {
-    id: "messages",
+    id: "dms",
     title: "Direct Messages",
     icon: Send,
     isActive: false

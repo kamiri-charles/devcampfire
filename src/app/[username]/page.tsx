@@ -142,12 +142,13 @@ export default function UserPage() {
 				);
 			case "room":
 				return <RoomMessages selectedRoom={selectedRoom} />;
-			case "messages":
+			case "dms":
 				return (
 					<DirectMessages
 						dms={dms}
 						loadingDms={loadingDms}
 						chatId={privateChatId}
+						setCurrentSection={setCurrentSection}
 						onBack={handleBackFromMessages}
 					/>
 				);
@@ -170,6 +171,8 @@ export default function UserPage() {
 					<Friends
 						connections={githubConnections}
 						loadingConnections={loadingConnections}
+						setActiveSection={setCurrentSection}
+						setChatId={setPrivateChatId}
 					/>
 				);
 			default:

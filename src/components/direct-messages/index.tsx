@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
@@ -16,6 +16,7 @@ interface DirectMessagesProps {
 	dms: DMConversation[];
 	loadingDms: boolean;
 	chatId: string | null;
+	setCurrentSection: Dispatch<SetStateAction<string>>;
 	onBack: () => void;
 }
 
@@ -24,6 +25,7 @@ export default function DirectMessages({
 	dms,
 	loadingDms,
 	chatId,
+	setCurrentSection,
 	onBack,
 }: DirectMessagesProps) {
 	const { data: session } = useSession();
@@ -50,7 +52,7 @@ export default function DirectMessages({
 
 	if (dms.length === 0) {
 		return (
-			<div className="flex-1 flex flex-col items-center justify-center bg-muted/20 p-4">
+			<div className="flex-1 flex flex-col items-center justify-center bg-muted/20 p-4 mt-8">
 				<div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mb-4">
 					<Send className="w-8 h-8 text-white" />
 				</div>
@@ -59,7 +61,7 @@ export default function DirectMessages({
 					You have no direct message conversations. Start a new conversation to
 					connect with other developers!
 				</p>
-				<Button variant="outline" className="cursor-pointer">
+				<Button variant="outline" className="cursor-pointer" onClick={() => setCurrentSection("friends")}>
 					Find Friends
 				</Button>
 			</div>
