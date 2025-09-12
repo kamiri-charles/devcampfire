@@ -108,6 +108,23 @@ export default function Friends({
 		}
 	};
 
+	async function openDM(targetUsername: string) {
+		try {
+			const res = await fetch("/api/conversations", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ targetUsername }),
+			});
+
+			const data = await res.json();
+			if (data.conversationId) {
+				console.log("Open DM with ID:", data.conversationId);
+			}
+		} catch (err) {
+			console.error("Failed to open DM:", err);
+		}
+	}
+
 	useEffect(() => {
 		const fetchEnrichment = async () => {
 			const missing = paginatedList.filter((u) => !enrichedUsers[u.username]);
@@ -346,9 +363,7 @@ export default function Friends({
 												) : userStatus[conn.username] === "exists" ? (
 													<Button
 														size="sm"
-														onClick={() =>
-															console.log("Start chat with", conn.username)
-														}
+														onClick={() => openDM(conn.username)}
 														className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
 													>
 														<MessageCircle className="w-4 h-4 mr-2" /> Message
@@ -434,14 +449,13 @@ export default function Friends({
 										<div className="flex space-x-2">
 											{userStatus[conn.username] === "loading" ? (
 												<Button size="sm" disabled>
-													<Loader2 className="animate-spin w-4 h-4 mr-2" /> Loading...
+													<Loader2 className="animate-spin w-4 h-4 mr-2" />{" "}
+													Loading...
 												</Button>
 											) : userStatus[conn.username] === "exists" ? (
 												<Button
 													size="sm"
-													onClick={() =>
-														console.log("Start chat with", conn.username)
-													}
+													onClick={() => openDM(conn.username)}
 													className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
 												>
 													<MessageCircle className="w-4 h-4 mr-2" /> Message
