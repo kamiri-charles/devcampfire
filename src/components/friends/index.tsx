@@ -328,9 +328,6 @@ export default function Friends({
 														<p className="text-sm text-gray-500">
 															@{conn.username}
 														</p>
-														<p className="text-xs text-gray-400">
-															"Last active"
-														</p>
 													</div>
 												</div>
 											</div>
@@ -425,7 +422,6 @@ export default function Friends({
 													<p className="text-sm text-gray-500">
 														@{conn.username}
 													</p>
-													<p className="text-xs text-gray-400">"Last active"</p>
 												</div>
 											</div>
 										</div>
