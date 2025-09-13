@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
+import { DmOverview } from "./dm-overview";
 
 interface DirectMessagesProps {
 	dms: DMConversation[];
@@ -49,9 +50,8 @@ export default function DirectMessages({
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ lastReadMessageId: conv.latestMessage?.id }),
 			});
-		}
+		};
 		markAsRead();
-
 	}, [dmId, session?.user, dms]);
 
 	if (loadingDms) {
@@ -119,75 +119,14 @@ export default function DirectMessages({
 
 				<ScrollArea className="flex-1">
 					<div className="p-2">
-						{filteredConversations.map((conversation) => {
-							const currentUserId = session?.user.dbId;
-
-							const otherParticipant = conversation?.participants.find(
-								(p) => p.id !== currentUserId
-							);
-
-							return (
-								<div
-									key={conversation.id}
-									className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-										dmId === conversation.id
-											? "bg-gradient-to-r from-purple-100 to-purple-200 border border-purple-300"
-											: "hover:bg-purple-50 hover:border hover:border-purple-200 border border-transparent"
-									}`}
-									onClick={() => setDmId(conversation.id)}
-								>
-									<div className="relative">
-										<Avatar className="w-12 h-12">
-											<AvatarImage
-												src={otherParticipant?.imageUrl || "./favicon.ico"}
-											/>
-											<AvatarFallback>
-												<FontAwesomeIcon icon={faUser} />
-											</AvatarFallback>
-										</Avatar>
-										{otherParticipant?.status === "online" && (
-											<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-										)}
-									</div>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center justify-between">
-											<h3 className="truncate font-medium text-gray-900">
-												{otherParticipant?.githubUsername ||
-													otherParticipant?.name ||
-													"friend"}
-											</h3>
-											<div className="flex items-center space-x-1">
-												{conversation.unreadCount > 0 && (
-													<Badge className="bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 text-xs">
-														{conversation.unreadCount}
-													</Badge>
-												)}
-												<span className="text-xs text-gray-500">
-													{conversation.latestMessage
-														? `${formatDistanceToNow(
-																new Date(conversation.latestMessage.createdAt),
-																{ addSuffix: true }
-														  )}`
-														: "No messages yet"}
-												</span>
-											</div>
-										</div>
-										<p className="text-sm text-gray-600 truncate">
-											{conversation.latestMessage ? (
-												conversation.latestMessage.senderId ===
-												session?.user?.dbId ? (
-													<>You: {conversation.latestMessage.content}</>
-												) : (
-													conversation.latestMessage.content
-												)
-											) : (
-												"No messages yet"
-											)}
-										</p>
-									</div>
-								</div>
-							);
-						})}
+						{filteredConversations.map((conversation) => (
+							<DmOverview
+								key={conversation.id}
+								conversation={conversation}
+								dmId={dmId}
+								setDmId={setDmId}
+							/>
+						))}
 					</div>
 				</ScrollArea>
 			</div>

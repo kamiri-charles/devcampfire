@@ -16,7 +16,6 @@ import { redirect } from "next/navigation";
 import { GitHubConnections, RepoType } from "@/types/github";
 import { DBConversation } from "@/db/schema";
 import { DMConversation } from "@/types/db-customs";
-import { pusherClient } from "@/lib/pusher-client";
 
 export default function UserPage() {
 	const [currentSection, setCurrentSection] = useState("dashboard");

@@ -5,9 +5,9 @@ import { eq, and } from "drizzle-orm";
 
 export async function POST(
 	req: Request,
-	{ params }: { params: Promise<{ id: string }> }
+	{ params }: { params: Promise<{ conversation_id: string }> }
 ) {
-    const { id } = await params;
+    const { conversation_id } = await params;
 	try {
 		const { lastReadMessageId } = await req.json();
 		const session = await auth();
@@ -22,7 +22,7 @@ export async function POST(
 			.from(conversationReads)
 			.where(
 				and(
-					eq(conversationReads.conversationId, id),
+					eq(conversationReads.conversationId, conversation_id),
 					eq(conversationReads.userId, session.user.dbId)
 				)
 			);
@@ -37,7 +37,7 @@ export async function POST(
 				.where(eq(conversationReads.id, existing.id));
 		} else {
 			await db.insert(conversationReads).values({
-				conversationId: id,
+				conversationId: conversation_id,
 				userId: session.user.dbId,
 				lastReadMessageId,
 			});

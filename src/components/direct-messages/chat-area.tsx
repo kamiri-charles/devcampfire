@@ -92,7 +92,7 @@ export function ChatArea({
 
 		const channel = pusherClient.subscribe(`conversation-${dmId}`);
 
-		channel.bind("message:new", (message: DMMessage) => {
+		channel.bind("new-message", (message: DMMessage) => {
 			setMessages((prev) => [...prev, message]);
 		});
 

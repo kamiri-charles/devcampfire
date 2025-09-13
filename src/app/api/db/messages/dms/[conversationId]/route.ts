@@ -5,7 +5,7 @@ import {
 	conversations,
 	conversationParticipants,
 } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { pusherServer } from "@/lib/pusher";
@@ -84,7 +84,7 @@ export async function GET(
 			.from(messages)
 			.innerJoin(users, eq(messages.senderId, users.id))
 			.where(eq(messages.conversationId, conversation_id))
-			.orderBy(desc(messages.createdAt));
+			.orderBy(asc(messages.createdAt));
 
 		return new NextResponse(JSON.stringify(convoMessages), { status: 200 });
 	} catch (err) {
@@ -96,9 +96,6 @@ export async function GET(
 }
 
 
-
-
-// POST /api/dms/[conversationId]
 export async function POST(
 	req: NextRequest,
 	{ params }: { params: Promise<{ conversationId: string }> }
@@ -184,22 +181,21 @@ export async function POST(
 
 		// Pusher events
 		await pusherServer.trigger(
-			`private-conversation-${conversationId}`,
-			"message:new",
-			enrichedMessage
+			`conversation-${conversationId}`,
+			"update-conversation",
+			{
+				id: conv.id,
+				latestMessage: enrichedMessage,
+				updatedAt: new Date(),
+			}
 		);
 
-		for (const p of participant) {
-			await pusherServer.trigger(
-				`private-user-${p.userId}`,
-				"conversation:updated",
-				{
-					id: conv.id,
-					latestMessage: enrichedMessage,
-					updatedAt: new Date(),
-				}
-			);
-		}
+		// Pusher new message event
+		await pusherServer.trigger(
+			`conversation-${conversationId}`,
+			"new-message",
+			enrichedMessage
+		);
 
 		return new NextResponse(JSON.stringify(enrichedMessage), { status: 201 });
 	} catch (err) {
