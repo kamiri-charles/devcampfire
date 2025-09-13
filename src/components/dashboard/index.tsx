@@ -12,6 +12,7 @@ import { MessageCircle, Users, TrendingUp } from "lucide-react";
 interface DashboardProps {
 	session: Session | null;
 	repoCount: number;
+	connections: number;
 	onSectionChange: (section: string) => void;
 	onStartPrivateChat: (userId: string) => void;
 }
@@ -19,6 +20,7 @@ interface DashboardProps {
 export default function Dashboard({
 	session,
 	repoCount,
+	connections,
 	onSectionChange,
 	onStartPrivateChat,
 }: DashboardProps) {
@@ -57,7 +59,7 @@ export default function Dashboard({
 								<Users className="w-5 h-5" />
 								<div>
 									<p className="text-sm opacity-90">Connections</p>
-									<p className="text-xl font-semibold">0</p>
+									<p className="text-xl font-semibold">{connections}</p>
 								</div>
 							</div>
 						</CardContent>
