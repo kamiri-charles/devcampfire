@@ -7,11 +7,11 @@ import {
 	users,
 	conversationReads,
 } from "@/db/schema";
+import { NextRequest } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
 	try {
-		const url = new URL(req.url);
-		const userId = url.searchParams.get("userId");
+		const { userId } = await params;
 
 		if (!userId) {
 			return new Response("Missing userId", { status: 400 });

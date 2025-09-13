@@ -122,7 +122,7 @@ export default function DirectMessages({
 						{filteredConversations.map((conversation) => {
 							const currentUserId = session?.user.dbId;
 
-							const otherParticipant = currentConversation?.participants.find(
+							const otherParticipant = conversation?.participants.find(
 								(p) => p.id !== currentUserId
 							);
 
@@ -152,7 +152,7 @@ export default function DirectMessages({
 									<div className="flex-1 min-w-0">
 										<div className="flex items-center justify-between">
 											<h3 className="truncate font-medium text-gray-900">
-												{conversation.name}
+												{otherParticipant?.githubUsername || otherParticipant?.name || "friend"}
 											</h3>
 											<div className="flex items-center space-x-1">
 												{conversation.unreadCount > 0 && (

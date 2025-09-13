@@ -203,7 +203,7 @@ export default function Friends({
 
 		(async () => {
 			try {
-				const res = await fetch("/api/github/in-app-users", {
+				const res = await fetch("/api/db/users/in-app", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ usernames }),
