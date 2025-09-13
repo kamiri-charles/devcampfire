@@ -3,14 +3,21 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Loader2 } from "lucide-react";
+import {
+	ArrowLeft,
+	Phone,
+	Video,
+	MoreVertical,
+	Send,
+	Loader2,
+} from "lucide-react";
 import { DMConversation, DMMessage } from "@/types/db-customs";
 import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { pusherClient } from "@/lib/pusher-client";
+import { useConversationChannel } from "@/hooks/user-pusher";
 
 interface ChatAreaProps {
 	dmId: string;
@@ -53,7 +60,6 @@ export function ChatArea({
 		}
 	};
 
-
 	const handleKeyPress = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
@@ -87,30 +93,22 @@ export function ChatArea({
 		}
 	}, []);
 
-	useEffect(() => {
-		if (!dmId) return;
-
-		const channel = pusherClient.subscribe(`conversation-${dmId}`);
-
-		channel.bind("new-message", (message: DMMessage) => {
-			setMessages((prev) => [...prev, message]);
-		});
-
-		return () => {
-			pusherClient.unsubscribe(`conversation-${dmId}`);
-		};
-	}, [dmId]);
+	useConversationChannel(dmId, (message) => {
+		setMessages((prev) => [...prev, message]);
+	});
 
 
 	if (!userId) return null;
-	
-	if (loadingMessages) return (
-	<div className="flex-1">
-		<div className="flex flex-col items-center justify-center h-full">
-			<Loader2 className="animate-spin" />
-			<p className="text-muted-foreground">Loading messages...</p>
-		</div>
-	</div>);
+
+	if (loadingMessages)
+		return (
+			<div className="flex-1">
+				<div className="flex flex-col items-center justify-center bg-white h-80">
+					<Loader2 className="animate-spin" />
+					<p className="text-muted-foreground">Loading messages...</p>
+				</div>
+			</div>
+		);
 
 	return (
 		<div
@@ -224,7 +222,11 @@ export function ChatArea({
 						value={message}
 						onChange={(e) => setMessage(e.target.value)}
 						onKeyDown={handleKeyPress}
-						placeholder={`Message ${otherParticipant?.name || otherParticipant?.githubUsername || "user"}...`}
+						placeholder={`Message ${
+							otherParticipant?.name ||
+							otherParticipant?.githubUsername ||
+							"user"
+						}...`}
 						className="flex-1"
 					/>
 					<Button

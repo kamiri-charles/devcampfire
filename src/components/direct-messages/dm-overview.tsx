@@ -3,56 +3,51 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "../ui/badge";
-import { DMConversation, DMLatestMessage, DMParticipant } from "@/types/db-customs";
+import { DMConversation, DMMessage, DMParticipant } from "@/types/db-customs";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { DBMessage } from "@/db/schema";
 import { pusherClient } from "@/lib/pusher-client";
+import { useConversationChannel } from "@/hooks/user-pusher";
 
 interface DmOverviewProps {
-    conversation: DMConversation;
-    dmId: string | null;
-    setDmId: Dispatch<SetStateAction<string | null>>;
+	conversation: DMConversation;
+	dmId: string | null;
+	setDmId: Dispatch<SetStateAction<string | null>>;
 }
 
-export function DmOverview({conversation, dmId, setDmId}: DmOverviewProps) {
-    const [recipient, setRecipient] = useState<DMParticipant | null>(null);
-    const {data: session }= useSession();
+export function DmOverview({ conversation, dmId, setDmId }: DmOverviewProps) {
+	const [recipient, setRecipient] = useState<DMParticipant | null>(null);
+	const [conv, setConv] = useState<DMConversation>(conversation);
+	const { data: session } = useSession();
 
-    useEffect(() => {
-        if (!session?.user.dbId) return;
-        const other = conversation.participants.find(
-            (p) => p.id !== session?.user?.dbId
-        );
-        setRecipient(other || null);
+	useEffect(() => {
+		if (!session?.user.dbId || !conversation.id) return;
+		
+		const other = conversation.participants.find(
+			(p) => p.id !== session?.user?.dbId
+		);
+		setRecipient(other || null);
 
-		// Subscribe to recipient status updates via Pusher
-		const channel = pusherClient.subscribe(`conversation-${conversation.id}`);
-		channel.bind("update-conversation", (data: {id: string, latestMessage: DMLatestMessage, updatedAt: Date}) => {
-			if (data.id === conversation.id) {
-				conversation.latestMessage = data.latestMessage;
-				conversation.updatedAt = data.updatedAt.toString();
-			}
-		});
+	}, [session?.user.dbId]);
 
-		// Cleanup
-		return () => {
-			channel.unbind_all();
-			pusherClient.unsubscribe(`conversation-${conversation.id}`);
-		}
+	useConversationChannel(conversation.id, (message) => {
+		setConv((prev) => ({
+			...prev,
+			latestMessage: message,
+			updatedAt: message.updatedAt,
+		}));
+	});
 
 
-    }, [session?.user.dbId])
 
-    
-  return (
+	return (
 		<div
 			className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-				dmId === conversation.id
+				dmId === conv.id
 					? "bg-gradient-to-r from-purple-100 to-purple-200 border border-purple-300"
 					: "hover:bg-purple-50 hover:border hover:border-purple-200 border border-transparent"
 			}`}
-			onClick={() => setDmId(conversation.id)}
+			onClick={() => setDmId(conv.id)}
 		>
 			<div className="relative">
 				<Avatar className="w-12 h-12">
@@ -68,20 +63,18 @@ export function DmOverview({conversation, dmId, setDmId}: DmOverviewProps) {
 			<div className="flex-1 min-w-0">
 				<div className="flex items-center justify-between">
 					<h3 className="truncate font-medium text-gray-900">
-						{recipient?.githubUsername ||
-							recipient?.name ||
-							"friend"}
+						{recipient?.githubUsername || recipient?.name || "friend"}
 					</h3>
 					<div className="flex items-center space-x-1">
-						{conversation.unreadCount > 0 && (
+						{conv.unreadCount > 0 && (
 							<Badge className="bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 text-xs">
-								{conversation.unreadCount}
+								{conv.unreadCount}
 							</Badge>
 						)}
 						<span className="text-xs text-gray-500">
-							{conversation.latestMessage
+							{conv.latestMessage
 								? `${formatDistanceToNow(
-										new Date(conversation.latestMessage.createdAt),
+										new Date(conv.latestMessage.createdAt),
 										{ addSuffix: true }
 								  )}`
 								: "No messages yet"}
@@ -89,11 +82,11 @@ export function DmOverview({conversation, dmId, setDmId}: DmOverviewProps) {
 					</div>
 				</div>
 				<p className="text-sm text-gray-600 truncate">
-					{conversation.latestMessage ? (
-						conversation.latestMessage.senderId === session?.user?.dbId ? (
-							<>You: {conversation.latestMessage.content}</>
+					{conv.latestMessage ? (
+						conv.latestMessage.sender.id === session?.user?.dbId ? (
+							<>You: {conv.latestMessage.content}</>
 						) : (
-							conversation.latestMessage.content
+							conv.latestMessage.content
 						)
 					) : (
 						"No messages yet"

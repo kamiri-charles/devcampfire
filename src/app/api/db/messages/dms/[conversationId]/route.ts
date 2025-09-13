@@ -179,17 +179,6 @@ export async function POST(
 			sender,
 		};
 
-		// Pusher events
-		await pusherServer.trigger(
-			`conversation-${conversationId}`,
-			"update-conversation",
-			{
-				id: conv.id,
-				latestMessage: enrichedMessage,
-				updatedAt: new Date(),
-			}
-		);
-
 		// Pusher new message event
 		await pusherServer.trigger(
 			`conversation-${conversationId}`,

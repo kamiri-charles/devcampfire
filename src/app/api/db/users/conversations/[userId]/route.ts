@@ -50,10 +50,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 					.innerJoin(users, eq(users.id, conversationParticipants.userId))
 					.where(eq(conversationParticipants.conversationId, conv.id));
 
-				// Latest message
+				// Latest message (with sender info)
 				const [latestMsg] = await db
-					.select()
+					.select({
+						id: messages.id,
+						content: messages.content,
+						createdAt: messages.createdAt,
+						updatedAt: messages.updatedAt,
+						sender: {
+							id: users.id,
+							name: users.name,
+							githubUsername: users.githubUsername,
+							imageUrl: users.imageUrl,
+							status: users.status,
+						},
+					})
 					.from(messages)
+					.innerJoin(users, eq(messages.senderId, users.id))
 					.where(eq(messages.conversationId, conv.id))
 					.orderBy(sql`${messages.createdAt} DESC`)
 					.limit(1);
@@ -88,16 +101,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 						name: p.users.name,
 						githubUsername: p.users.githubUsername,
 						imageUrl: p.users.imageUrl,
-						status: p.users.status
+						status: p.users.status,
 					})),
 					latestMessage: latestMsg
 						? {
 								id: latestMsg.id,
 								content: latestMsg.content,
-								senderId: latestMsg.senderId,
 								createdAt: latestMsg.createdAt,
+								updatedAt: latestMsg.updatedAt,
+								sender: latestMsg.sender,
 						  }
 						: null,
+
 					unreadCount,
 				};
 			})

@@ -1,16 +1,11 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
-import { Badge } from "../ui/badge";
 import { Send, ArrowLeft, Search, Loader2 } from "lucide-react";
 import { ChatArea } from "./chat-area";
 import { DMConversation } from "@/types/db-customs";
 import { useSession } from "next-auth/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { formatDistanceToNow } from "date-fns";
 import { DmOverview } from "./dm-overview";
 
 interface DirectMessagesProps {
@@ -37,6 +32,7 @@ export default function DirectMessages({
 			.toLowerCase()
 			.includes(searchQuery.toLowerCase())
 	);
+	const [, setTick] = useState(0);
 
 	useEffect(() => {
 		if (!dmId || !session?.user) return;
@@ -53,6 +49,15 @@ export default function DirectMessages({
 		};
 		markAsRead();
 	}, [dmId, session?.user, dms]);
+
+	// Used to trigger re-renders for relative time
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTick((t) => t + 1);
+		}, 60000);
+
+		return () => clearInterval(interval);
+	}, []);
 
 	if (loadingDms) {
 		return (
@@ -142,14 +147,14 @@ export default function DirectMessages({
 
 			{/* No chat selected */}
 			{!dmId && (
-				<div className="hidden md:flex flex-1 items-center justify-center bg-muted/20">
+				<div className="hidden md:flex flex-1 items-center justify-center bg-white h-80">
 					<div className="text-center">
 						<div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
 							<Send className="w-8 h-8 text-white" />
 						</div>
 						<h3 className="mb-2">Select a conversation</h3>
 						<p className="text-muted-foreground">
-							Choose a conversation from the sidebar to start messaging
+							Choose a conversation to start messaging
 						</p>
 					</div>
 				</div>

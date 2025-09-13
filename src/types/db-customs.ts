@@ -6,25 +6,6 @@ export type DMParticipant = {
 	status: string;
 };
 
-export type DMLatestMessage = {
-	id: string;
-	content: string;
-	senderId: string;
-	createdAt: string;
-};
-
-export type DMConversation = {
-	id: string;
-	type: "dm" | "group";
-	name: string | null;
-	createdBy: string;
-	createdAt: string;
-	updatedAt: string;
-	participants: DMParticipant[];
-	latestMessage: DMLatestMessage | null;
-	unreadCount: number;
-};
-
 export type DMSender = {
 	id: string;
 	name: string | null;
@@ -39,3 +20,16 @@ export type DMMessage = {
 	updatedAt: string;
 	sender: DMSender;
 };
+
+export type DMConversation = {
+	id: string;
+	type: "dm" | "group";
+	name: string | null;
+	createdBy: string;
+	createdAt: string;
+	updatedAt: string;
+	participants: DMParticipant[];
+	latestMessage: DMMessage | null;
+	unreadCount: number;
+};
+
