@@ -152,7 +152,9 @@ export default function DirectMessages({
 									<div className="flex-1 min-w-0">
 										<div className="flex items-center justify-between">
 											<h3 className="truncate font-medium text-gray-900">
-												{otherParticipant?.githubUsername || otherParticipant?.name || "friend"}
+												{otherParticipant?.githubUsername ||
+													otherParticipant?.name ||
+													"friend"}
 											</h3>
 											<div className="flex items-center space-x-1">
 												{conversation.unreadCount > 0 && (
@@ -161,11 +163,9 @@ export default function DirectMessages({
 													</Badge>
 												)}
 												<span className="text-xs text-gray-500">
-													{currentConversation?.latestMessage
+													{conversation.latestMessage
 														? `${formatDistanceToNow(
-																new Date(
-																	currentConversation.latestMessage.createdAt
-																),
+																new Date(conversation.latestMessage.createdAt),
 																{ addSuffix: true }
 														  )}`
 														: "No messages yet"}
@@ -173,8 +173,16 @@ export default function DirectMessages({
 											</div>
 										</div>
 										<p className="text-sm text-gray-600 truncate">
-											{currentConversation?.latestMessage?.content ??
-												"No messages yet"}
+											{conversation.latestMessage ? (
+												conversation.latestMessage.senderId ===
+												session?.user?.dbId ? (
+													<>You: {conversation.latestMessage.content}</>
+												) : (
+													conversation.latestMessage.content
+												)
+											) : (
+												"No messages yet"
+											)}
 										</p>
 									</div>
 								</div>

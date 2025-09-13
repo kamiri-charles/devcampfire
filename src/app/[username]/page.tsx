@@ -111,8 +111,9 @@ export default function UserPage() {
 		fetchConnections();
 
 		const fetchDms = async () => {
+			if (!session?.user?.dbId) return;
 			try {
-				const res = await fetch(`/api/db/users/conversations/${session?.user?.dbId}`);
+				const res = await fetch(`/api/db/users/conversations/${session.user.dbId}`);
 				if (res.ok) {
 					const data = await res.json();
 					setDms(data);
@@ -140,7 +141,7 @@ export default function UserPage() {
 		
 		window.addEventListener("beforeunload", handleBeforeUnload);
 
-	}, [status, session]);
+	}, [status, session?.user.dbId]);
 
 	const handleLogout = () => {
 		setCurrentSection("dashboard");

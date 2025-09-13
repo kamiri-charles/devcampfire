@@ -224,7 +224,7 @@ export function ChatArea({
 						value={message}
 						onChange={(e) => setMessage(e.target.value)}
 						onKeyDown={handleKeyPress}
-						placeholder={`Message ${currentConversation.name}...`}
+						placeholder={`Message ${otherParticipant?.name || otherParticipant?.githubUsername || "user"}...`}
 						className="flex-1"
 					/>
 					<Button
