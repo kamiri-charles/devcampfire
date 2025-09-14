@@ -1,12 +1,10 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import {
 	ArrowLeft,
-	Phone,
-	Video,
 	MoreVertical,
 	Send,
 	Loader2,
@@ -34,6 +32,9 @@ export function ChatArea({
 	const [messages, setMessages] = useState<DMMessage[]>([]);
 	const [loadingMessages, setLoadingMessages] = useState(true);
 	const [message, setMessage] = useState("");
+	const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+	const messagesEndRef = useRef<HTMLDivElement | null>(null);
+	const [isNearBottom, setIsNearBottom] = useState(true);
 
 	const handleSendMessage = async () => {
 		if (!message.trim() || !dmId) return;
@@ -72,6 +73,20 @@ export function ChatArea({
 		(p) => p.id !== userId
 	);
 
+	
+
+	const handleScroll = () => {
+		const el = scrollAreaRef.current;
+		if (!el) return;
+
+		const threshold = 100; // px from bottom
+		const position = el.scrollTop + el.clientHeight;
+		const height = el.scrollHeight;
+
+		setIsNearBottom(position >= height - threshold);
+	};
+
+
 	useEffect(() => {
 		const fetchMessages = async () => {
 			try {
@@ -96,6 +111,22 @@ export function ChatArea({
 	useConversationChannel(dmId, (message) => {
 		setMessages((prev) => [...prev, message]);
 	});
+
+	useEffect(() => {
+		const el = scrollAreaRef.current;
+		if (!el) return;
+
+		el.addEventListener("scroll", handleScroll);
+		return () => el.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	useEffect(() => {
+		if (messagesEndRef.current && isNearBottom) {
+			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [messages, isNearBottom]);
+
+
 
 
 	if (!userId) return null;
@@ -142,7 +173,11 @@ export function ChatArea({
 							)}
 						</div>
 						<div>
-							<h3>{otherParticipant?.githubUsername || otherParticipant?.name || "friend"}</h3>
+							<h3>
+								{otherParticipant?.githubUsername ||
+									otherParticipant?.name ||
+									"friend"}
+							</h3>
 							<p className="text-sm text-muted-foreground">
 								{otherParticipant?.status === "online" ? "Online" : ""}
 							</p>
@@ -157,7 +192,7 @@ export function ChatArea({
 			</div>
 
 			{/* Messages */}
-			<div className="flex-1 overflow-hidden">
+			<div className="flex-1 overflow-hidden" ref={scrollAreaRef}>
 				<ScrollArea className="h-full p-4">
 					<div className="space-y-4">
 						{messages.map((msg) => (
@@ -207,9 +242,22 @@ export function ChatArea({
 								)}
 							</div>
 						))}
+						<div ref={messagesEndRef} />
 					</div>
 				</ScrollArea>
 			</div>
+
+			{!isNearBottom && (
+				<Button
+					size="sm"
+					className="absolute bottom-20 right-4 shadow"
+					onClick={() => {
+						messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+					}}
+				>
+					New messages ↓
+				</Button>
+			)}
 
 			{/* Message Input */}
 			<div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
