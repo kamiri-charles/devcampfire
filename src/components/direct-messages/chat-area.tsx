@@ -112,7 +112,7 @@ export function ChatArea({
 
 	return (
 		<div
-			className={`flex-1 flex flex-col h-full ${
+			className={`flex-1 flex flex-col h-[90vh] ${
 				dmId ? "flex" : "hidden md:flex"
 			}`}
 		>
@@ -142,20 +142,14 @@ export function ChatArea({
 							)}
 						</div>
 						<div>
-							<h3>{currentConversation.name}</h3>
+							<h3>{otherParticipant?.githubUsername || otherParticipant?.name || "friend"}</h3>
 							<p className="text-sm text-muted-foreground">
 								{otherParticipant?.status === "online" ? "Online" : ""}
 							</p>
 						</div>
 					</div>
 					<div className="flex items-center space-x-2">
-						<Button variant="ghost" size="sm">
-							<Phone className="w-4 h-4" />
-						</Button>
-						<Button variant="ghost" size="sm">
-							<Video className="w-4 h-4" />
-						</Button>
-						<Button variant="ghost" size="sm">
+						<Button variant="ghost" size="sm" className="cursor-pointer">
 							<MoreVertical className="w-4 h-4" />
 						</Button>
 					</div>
@@ -163,57 +157,59 @@ export function ChatArea({
 			</div>
 
 			{/* Messages */}
-			<ScrollArea className="flex-1 p-4 min-h-[70vh]">
-				<div className="space-y-4">
-					{messages.map((msg) => (
-						<div
-							key={msg.id}
-							className={`flex ${
-								msg.sender.id === session.user.dbId
-									? "justify-end"
-									: "justify-start"
-							}`}
-						>
+			<div className="flex-1 overflow-hidden">
+				<ScrollArea className="h-full p-4">
+					<div className="space-y-4">
+						{messages.map((msg) => (
 							<div
-								className={`max-w-xs md:max-w-md ${
-									msg.sender.id === session.user.dbId ? "order-2" : "order-1"
+								key={msg.id}
+								className={`flex ${
+									msg.sender.id === session.user.dbId
+										? "justify-end"
+										: "justify-start"
 								}`}
 							>
 								<div
-									className={`p-3 rounded-lg ${
-										msg.sender.id === session.user.dbId
-											? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
-											: "bg-muted"
+									className={`max-w-xs md:max-w-md ${
+										msg.sender.id === session.user.dbId ? "order-2" : "order-1"
 									}`}
 								>
-									<p className="text-sm">{msg.content}</p>
+									<div
+										className={`p-3 rounded-lg ${
+											msg.sender.id === session.user.dbId
+												? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
+												: "bg-muted"
+										}`}
+									>
+										<p className="text-sm">{msg.content}</p>
+									</div>
+									<p
+										className={`text-xs text-muted-foreground mt-1 ${
+											msg.sender.id === session.user.dbId
+												? "text-right"
+												: "text-left"
+										}`}
+									>
+										{formatDistanceToNow(new Date(msg.createdAt), {
+											addSuffix: true,
+										})}
+									</p>
 								</div>
-								<p
-									className={`text-xs text-muted-foreground mt-1 ${
-										msg.sender.id === session.user.dbId
-											? "text-right"
-											: "text-left"
-									}`}
-								>
-									{formatDistanceToNow(new Date(msg.createdAt), {
-										addSuffix: true,
-									})}
-								</p>
+								{msg.sender.id !== session.user.dbId && (
+									<Avatar className="w-8 h-8 order-1 mr-2">
+										<AvatarImage
+											src={otherParticipant?.imageUrl || "./favicon.ico"}
+										/>
+										<AvatarFallback>
+											<FontAwesomeIcon icon={faGithub} />
+										</AvatarFallback>
+									</Avatar>
+								)}
 							</div>
-							{msg.sender.id !== session.user.dbId && (
-								<Avatar className="w-8 h-8 order-1 mr-2">
-									<AvatarImage
-										src={otherParticipant?.imageUrl || "./favicon.ico"}
-									/>
-									<AvatarFallback>
-										<FontAwesomeIcon icon={faGithub} />
-									</AvatarFallback>
-								</Avatar>
-							)}
-						</div>
-					))}
-				</div>
-			</ScrollArea>
+						))}
+					</div>
+				</ScrollArea>
+			</div>
 
 			{/* Message Input */}
 			<div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
