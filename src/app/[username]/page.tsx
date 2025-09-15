@@ -155,6 +155,7 @@ export default function UserPage() {
 						}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
+						setSelectedRoom={setSelectedRoom}
 					/>
 				);
 			case "room":
@@ -198,6 +199,7 @@ export default function UserPage() {
 						connections={githubConnections ? (githubConnections.followers.length + githubConnections.following.length) : 0}
 						onSectionChange={setCurrentSection}
 						onStartPrivateChat={handleStartPrivateChat}
+						setSelectedRoom={setSelectedRoom}
 					/>
 				);
 		}

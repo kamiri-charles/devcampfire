@@ -9,13 +9,20 @@ import {
 } from "@/db/schema";
 import { NextRequest } from "next/server";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+export async function GET(
+	req: NextRequest,
+	{ params }: { params: Promise<{ userId: string }> }
+) {
 	try {
 		const { userId } = await params;
 
 		if (!userId) {
 			return new Response("Missing userId", { status: 400 });
 		}
+
+		const { searchParams } = new URL(req.url);
+		const limitParam = searchParams.get("limit");
+		const limit = limitParam ? parseInt(limitParam, 10) : undefined;
 
 		// Get all DM conversation IDs for this user
 		const participantRows = await db
@@ -29,16 +36,32 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 			return new Response(JSON.stringify([]));
 		}
 
-		// Fetch DM conversations
-		const userConversations = await db
-			.select()
-			.from(conversations)
-			.where(
-				and(
-					eq(conversations.type, "dm"),
-					inArray(conversations.id, conversationIds)
-				)
-			);
+		// Fetch DM conversations (ordered & limited at DB level)
+		const userConversations = await(
+			limit
+				? db
+						.select()
+						.from(conversations)
+						.where(
+							and(
+								eq(conversations.type, "dm"),
+								inArray(conversations.id, conversationIds)
+							)
+						)
+						.orderBy(sql`${conversations.updatedAt} DESC`)
+						.limit(limit)
+				: db
+						.select()
+						.from(conversations)
+						.where(
+							and(
+								eq(conversations.type, "dm"),
+								inArray(conversations.id, conversationIds)
+							)
+						)
+						.orderBy(sql`${conversations.updatedAt} DESC`)
+		);
+
 
 		// Fetch participants and latest message for each conversation
 		const convsWithDetails = await Promise.all(
@@ -71,6 +94,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 					.orderBy(sql`${messages.createdAt} DESC`)
 					.limit(1);
 
+				// Read state
 				const [readRow] = await db
 					.select()
 					.from(conversationReads)
@@ -81,7 +105,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 						)
 					);
 
-				// If no readRow exists, user hasn’t opened conversation → unread = all messages
+				// Unread count
 				const unreadCountResult = await db
 					.select({ count: sql<number>`count(*)` })
 					.from(messages)
@@ -93,7 +117,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 					);
 
 				const unreadCount = unreadCountResult[0]?.count ?? 0;
-
 
 				return {
 					...conv,
@@ -113,7 +136,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 								sender: latestMsg.sender,
 						  }
 						: null,
-
 					unreadCount,
 				};
 			})

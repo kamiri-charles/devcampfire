@@ -8,6 +8,8 @@ import { Card, CardContent } from "../ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { MessageCircle, Users, TrendingUp } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
+import { DBConversation } from "@/db/schema";
 
 interface DashboardProps {
 	session: Session | null;
@@ -15,6 +17,7 @@ interface DashboardProps {
 	connections: number;
 	onSectionChange: (section: string) => void;
 	onStartPrivateChat: (userId: string) => void;
+	setSelectedRoom: Dispatch<SetStateAction<DBConversation | null>>;
 }
 
 export default function Dashboard({
@@ -23,6 +26,7 @@ export default function Dashboard({
 	connections,
 	onSectionChange,
 	onStartPrivateChat,
+	setSelectedRoom,
 }: DashboardProps) {
 
 	if (!session) return null;
@@ -93,7 +97,7 @@ export default function Dashboard({
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Left column */}
 					<div className="lg:col-span-2 space-y-6">
-						<RecentChats onSectionChange={onSectionChange} onStartPrivateChat={onStartPrivateChat} />
+						<RecentChats onSectionChange={onSectionChange} onStartPrivateChat={onStartPrivateChat} setSelectedRoom={setSelectedRoom} />
 						<RecentActivity onSectionChange={onSectionChange} onStartPrivateChat={onStartPrivateChat} />
 					</div>
 
