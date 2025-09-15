@@ -15,7 +15,7 @@ export const userStatus = pgEnum("user_status", [
 	"away",
 	"busy",
 ]);
-export const conversationType = pgEnum("conversation_type", ["dm", "group"]);
+export const conversationType = pgEnum("conversation_type", ["dm", "group", "channel"]);
 
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().defaultRandom(),

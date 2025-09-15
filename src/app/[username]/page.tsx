@@ -78,7 +78,7 @@ export default function UserPage() {
 
 		const fetchRooms = async () => {
 			try {
-				const res = await fetch("/api/db/conversations/rooms");
+				const res = await fetch("/api/db/conversations/channels");
 				if (res.ok) {
 					const data = await res.json();
 					setChannels(data);
@@ -164,7 +164,7 @@ export default function UserPage() {
 			case "dms":
 				return (
 					<DirectMessages
-						chatId={currentDMId}
+						conversationId={currentDMId}
 						setCurrentSection={setCurrentSection}
 						onBack={handleBackFromMessages}
 					/>

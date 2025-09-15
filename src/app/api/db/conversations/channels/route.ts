@@ -18,7 +18,7 @@ export async function GET() {
 			.select()
 			.from(conversations)
 			.where(
-                eq(conversations.type, "group")
+                eq(conversations.type, "channel")
 			);
 
 		return new NextResponse(JSON.stringify(groups), { status: 200 });

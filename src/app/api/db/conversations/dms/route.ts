@@ -8,17 +8,22 @@ import {
 	conversationReads,
 } from "@/db/schema";
 import { NextRequest } from "next/server";
+import { auth } from "@/auth";
 
-export async function GET(
-	req: NextRequest,
-	{ params }: { params: Promise<{ userId: string }> }
-) {
+export async function GET(req: NextRequest) {
 	try {
-		const { userId } = await params;
 
-		if (!userId) {
-			return new Response("Missing userId", { status: 400 });
-		}
+        const session = await auth();
+
+        if (!session) {
+            return new Response("Unauthorized", { status: 401 });
+        }
+        if (!session.user?.dbId) {
+            return new Response("Unauthorized", { status: 401 });
+        }
+
+        const userId = session.user.dbId;
+
 
 		const { searchParams } = new URL(req.url);
 		const limitParam = searchParams.get("limit");
@@ -37,31 +42,28 @@ export async function GET(
 		}
 
 		// Fetch DM conversations (ordered & limited at DB level)
-		const userConversations = await(
-			limit
-				? db
-						.select()
-						.from(conversations)
-						.where(
-							and(
-								eq(conversations.type, "dm"),
-								inArray(conversations.id, conversationIds)
-							)
+		const userConversations = await (limit
+			? db
+					.select()
+					.from(conversations)
+					.where(
+						and(
+							eq(conversations.type, "dm"),
+							inArray(conversations.id, conversationIds)
 						)
-						.orderBy(sql`${conversations.updatedAt} DESC`)
-						.limit(limit)
-				: db
-						.select()
-						.from(conversations)
-						.where(
-							and(
-								eq(conversations.type, "dm"),
-								inArray(conversations.id, conversationIds)
-							)
+					)
+					.orderBy(sql`${conversations.updatedAt} DESC`)
+					.limit(limit)
+			: db
+					.select()
+					.from(conversations)
+					.where(
+						and(
+							eq(conversations.type, "dm"),
+							inArray(conversations.id, conversationIds)
 						)
-						.orderBy(sql`${conversations.updatedAt} DESC`)
-		);
-
+					)
+					.orderBy(sql`${conversations.updatedAt} DESC`));
 
 		// Fetch participants and latest message for each conversation
 		const convsWithDetails = await Promise.all(

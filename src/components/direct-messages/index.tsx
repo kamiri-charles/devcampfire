@@ -9,22 +9,22 @@ import { useSession } from "next-auth/react";
 import { DmOverview } from "./dm-overview";
 
 interface DirectMessagesProps {
-	chatId: string | null;
+	conversationId: string | null;
 	setCurrentSection: Dispatch<SetStateAction<string>>;
 	onBack: () => void;
 }
 
 export default function DirectMessages({
-	chatId,
+	conversationId,
 	setCurrentSection,
 	onBack,
 }: DirectMessagesProps) {
 	const { data: session } = useSession();
+	const [dmId, setDmId] = useState<string | null>(conversationId);
 	const [dms, setDms] = useState<DMConversation[]>([]);
 	const [loadingDms, setLoadingDms] = useState(true);
-	const [dmId, setDmId] = useState(chatId);
 	const [searchQuery, setSearchQuery] = useState("");
-	const currentConversation = dms.find((conv) => conv.id === dmId);
+	const currentConversation = dms.find((conv) => conv.id === conversationId);
 	const filteredConversations = dms.filter((conv) =>
 		(conv.name ?? conv.participants.map((p) => p.githubUsername).join(" "))
 			.toLowerCase()
@@ -33,14 +33,9 @@ export default function DirectMessages({
 	const [, setTick] = useState(0);
 
 	useEffect(() => {
-		if (!session?.user?.dbId) return;
-
 		const fetchDms = async () => {
-			if (!session.user.dbId) return;
 			try {
-				const res = await fetch(
-					`/api/db/users/conversations/${session.user.dbId}`
-				);
+				const res = await fetch("api/conversations/dms?limit=50");
 				if (res.ok) {
 					const data = await res.json();
 					setDms(data);
@@ -52,17 +47,17 @@ export default function DirectMessages({
 			}
 		};
 		fetchDms();
-	}, [session?.user.dbId]);
+	}, []);
 
 	// After opening a conversation, reset the unreadCount for that dm
 	useEffect(() => {
-		if (!dmId) return;
+		if (!conversationId) return;
 		setDms((prevDms) =>
 			prevDms.map((dm) =>
-				dm.id === dmId ? { ...dm, unreadCount: 0 } : dm
+				dm.id === conversationId ? { ...dm, unreadCount: 0 } : dm
 			)
 		);
-	}, [dmId]);
+	}, [conversationId]);
 
 	// Used to trigger re-renders for relative time
 	useEffect(() => {
@@ -108,7 +103,7 @@ export default function DirectMessages({
 		<div className="flex-1 flex bg-gradient-to-br from-purple-50 to-orange-50">
 			<div
 				className={`w-full md:w-100 border-r border-border bg-card ${
-					dmId ? "hidden md:block" : "block"
+					conversationId ? "hidden md:block" : "block"
 				}`}
 			>
 				<div className="p-4 border-b border-border">
@@ -142,7 +137,7 @@ export default function DirectMessages({
 							<DmOverview
 								key={conversation.id}
 								conversation={conversation}
-								dmId={dmId}
+								dmId={conversationId}
 								setDmId={setDmId}
 							/>
 						))}
@@ -151,16 +146,16 @@ export default function DirectMessages({
 			</div>
 
 			{/* Chat area */}
-			{dmId && currentConversation && (
+			{conversationId && currentConversation && (
 				<ChatArea
-					dmId={dmId}
-					setDmId={setDmId}
+					conversationId={conversationId}
+					setConversationId={setDmId}
 					currentConversation={currentConversation}
 				/>
 			)}
 
 			{/* No chat selected */}
-			{!dmId && (
+			{!conversationId && (
 				<div className="hidden md:flex flex-1 items-center justify-center bg-white h-80">
 					<div className="text-center">
 						<div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">

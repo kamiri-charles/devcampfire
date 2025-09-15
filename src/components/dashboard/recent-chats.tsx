@@ -5,7 +5,7 @@ import { MessageCircle, Hash, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { DMConversation } from "@/types/db-customs";
-import { DBConversation, DBMessage, DBMessageWithSender } from "@/db/schema";
+import { DBConversation } from "@/db/schema";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
@@ -37,9 +37,7 @@ export function RecentChats({ onStartPrivateChat, onSectionChange, setSelectedRo
 		const fetchDms = async () => {
 			if (!session.user.dbId) return;
 			try {
-				const res = await fetch(
-					`/api/db/users/conversations/${session.user.dbId}?limit=5`
-				);
+				const res = await fetch("/api/db/conversations/dms?limit=5");
 				if (res.ok) {
 					const data = await res.json();
 					setDms(data);

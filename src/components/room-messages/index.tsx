@@ -11,6 +11,7 @@ import { DBConversation, DBMessageWithSender } from "@/db/schema";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
 import { pusherClient } from "@/lib/pusher-client";
+import { toast } from "sonner";
 
 interface RoomMessagesProps {
 	selectedRoom: DBConversation | null;
@@ -20,6 +21,7 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 	const [message, setMessage] = useState("");
 	const [messages, setMessages] = useState<DBMessageWithSender[]>([]);
 	const [loadingMessages, setLoadingMessages] = useState(true);
+	const [sendingMessage, setSendingMessage] = useState(false);
 	const [, setTick] = useState(0);
 	const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -75,21 +77,22 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 		if (!selectedRoom?.id) return;
 
 		try {
-			await fetch("/api/db/messages", {
+			await fetch(`/api/db/conversations/${selectedRoom.id}/messages`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					conversationId: selectedRoom.id,
 					content: message,
 				}),
 			});
 		} catch (err) {
+			toast.error("There was an error sending your message.");
 			console.error("Failed to send message:", err);
+		} finally {
+			setSendingMessage(false);
+			setMessage("");
 		}
-
-		setMessage("");
 	};
 
 	const handleKeyPress = (e: React.KeyboardEvent) => {

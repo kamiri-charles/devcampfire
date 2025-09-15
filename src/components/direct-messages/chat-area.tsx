@@ -18,14 +18,14 @@ import { toast } from "sonner";
 import { useConversationChannel } from "@/hooks/user-pusher";
 
 interface ChatAreaProps {
-	dmId: string;
-	setDmId: Dispatch<SetStateAction<string | null>>;
+	conversationId: string;
+	setConversationId: Dispatch<SetStateAction<string | null>>;
 	currentConversation: DMConversation;
 }
 
 export function ChatArea({
-	dmId,
-	setDmId,
+	conversationId,
+	setConversationId,
 	currentConversation,
 }: ChatAreaProps) {
 	const { data: session } = useSession();
@@ -40,7 +40,7 @@ export function ChatArea({
 	useEffect(() => {
 		const fetchMessages = async () => {
 			try {
-				const res = await fetch(`/api/db/messages/dms/${dmId}`);
+				const res = await fetch(`/api/db/conversations/${conversationId}/messages`);
 				if (!res.ok) {
 					console.error("Failed to fetch messages");
 					return;
@@ -53,19 +53,17 @@ export function ChatArea({
 				setLoadingMessages(false);
 			}
 		};
-		if (dmId) {
+		if (conversationId) {
 			fetchMessages();
 		}
 	}, []);
 
 	useEffect(() => {
-		if (!dmId || messages.length === 0) return;
-
-		const lastMessageId = messages[messages.length - 1].id;
+		if (!conversationId || messages.length === 0) return;
 
 		const markAsRead = async () => {
 			try {
-				await fetch(`/api/db/conversations/${dmId}/read`, {
+				await fetch(`/api/db/conversations/${conversationId}/read`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					
@@ -76,7 +74,7 @@ export function ChatArea({
 		};
 
 		markAsRead();
-	}, [dmId, messages]);
+	}, [conversationId, messages]);
 
 
 	useEffect(() => {
@@ -94,13 +92,13 @@ export function ChatArea({
 	}, [messages, isNearBottom]);
 
 	const handleSendMessage = async () => {
-		if (!message.trim() || !dmId) return;
+		if (!message.trim() || !conversationId) return;
 
 		const content = message.trim();
 
 		try {
 			setSendingMessage(true);
-			const res = await fetch(`/api/db/messages/dms/${dmId}`, {
+			const res = await fetch(`/api/db/messages/dms/${conversationId}`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ content }),
@@ -142,7 +140,7 @@ export function ChatArea({
 		setIsNearBottom(position >= height - threshold);
 	};
 
-	useConversationChannel(dmId, (message) => {
+	useConversationChannel(conversationId, (message) => {
 		setMessages((prev) => [...prev, message]);
 	});
 
@@ -161,7 +159,7 @@ export function ChatArea({
 	return (
 		<div
 			className={`flex-1 flex flex-col h-[90vh] ${
-				dmId ? "flex" : "hidden md:flex"
+				conversationId ? "flex" : "hidden md:flex"
 			}`}
 		>
 			{/* Chat Header */}
@@ -171,7 +169,7 @@ export function ChatArea({
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setDmId(null)}
+							onClick={() => setConversationId(null)}
 							className="md:hidden"
 						>
 							<ArrowLeft className="w-4 h-4" />
