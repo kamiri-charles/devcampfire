@@ -53,13 +53,9 @@ export function RecentChats({ onStartPrivateChat, onSectionChange, setSelectedRo
 
 	useEffect(() => {
 		if (dms.length === 0) return;
-		dms.forEach((dm) => {
-			setRecentMessages((prev) => [
-				...prev,
-				{ type: "dm", message: dm }
-			]);
-		});
+		setRecentMessages(dms.map((dm) => ({ type: "dm", message: dm })));
 	}, [dms]);
+
 
 	if (!session?.user.dbId) return null;
 
