@@ -54,6 +54,16 @@ export default function DirectMessages({
 		fetchDms();
 	}, [session?.user.dbId]);
 
+	// After opening a conversation, reset the unreadCount for that dm
+	useEffect(() => {
+		if (!dmId) return;
+		setDms((prevDms) =>
+			prevDms.map((dm) =>
+				dm.id === dmId ? { ...dm, unreadCount: 0 } : dm
+			)
+		);
+	}, [dmId]);
+
 	// Used to trigger re-renders for relative time
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -65,7 +75,7 @@ export default function DirectMessages({
 
 	if (loadingDms) {
 		return (
-			<div className="flex-1 flex items-center justify-center">
+			<div className="flex-1 flex flex-col items-center justify-center h-100">
 				<Loader2 className="animate-spin mr-2" />
 				<p>Loading conversations...</p>
 			</div>
