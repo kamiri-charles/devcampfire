@@ -35,7 +35,7 @@ export default function DirectMessages({
 	useEffect(() => {
 		const fetchDms = async () => {
 			try {
-				const res = await fetch("api/conversations/dms?limit=50");
+				const res = await fetch("api/db/conversations/dms?limit=50");
 				if (res.ok) {
 					const data = await res.json();
 					setDms(data);

@@ -61,7 +61,7 @@ export function RecentChats({ onStartPrivateChat, onSectionChange, setSelectedRo
 		});
 	}, [dms]);
 
-	if (session?.user.dbId) return null;
+	if (!session?.user.dbId) return null;
 
 	if (loadingDms) {
 		return (
