@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { DBConversation } from "@/db/schema";
+import { GitHubConnections, RepoType } from "@/types/github";
 import AppSidebar from "@/components/app-sidebar";
 import MobileNav from "@/components/mobile-nav";
 import Dashboard from "@/components/dashboard";
@@ -11,20 +15,16 @@ import Discovery from "@/components/discovery";
 import DirectMessages from "@/components/direct-messages";
 import Friends from "@/components/friends";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { signOut, useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { GitHubConnections, RepoType } from "@/types/github";
-import { DBConversation } from "@/db/schema";
 
 export default function UserPage() {
 	const [currentSection, setCurrentSection] = useState("dashboard");
-	const [privateChatId, setPrivateChatId] = useState<string | null>(null);
+	const [currentDMId, setCurrentDMId] = useState<string | null>(null);
 	const [languages, setLanguages] = useState<string[]>([]);
 	const [loadingLanguages, setLoadingLanguages] = useState(true);
 	const [repos, setRepos] = useState<RepoType[]>([]);
 	const [loadingRepos, setLoadingRepos] = useState(true);
-	const [rooms, setRooms] = useState<DBConversation[]>([]);
-	const [loadingRooms, setLoadingRooms] = useState(true);
+	const [channels, setChannels] = useState<DBConversation[]>([]);
+	const [loadingChannels, setLoadingChannels] = useState(true);
 	const [selectedRoom, setSelectedRoom] = useState<DBConversation | null>(null);
 	const [githubConnections, setGitHubConnections] = useState<GitHubConnections | null>(null);
 	const [loadingConnections, setLoadingConnections] = useState(true);	
@@ -81,12 +81,12 @@ export default function UserPage() {
 				const res = await fetch("/api/db/conversations/rooms");
 				if (res.ok) {
 					const data = await res.json();
-					setRooms(data);
+					setChannels(data);
 				}
 			} catch (e) {
 				console.error(e);
 			} finally {
-				setLoadingRooms(false);
+				setLoadingChannels(false);
 			}
 		};
 		fetchRooms();
@@ -126,17 +126,18 @@ export default function UserPage() {
 
 	const handleLogout = () => {
 		setCurrentSection("dashboard");
-		setPrivateChatId(null);
+		setCurrentDMId(null);
+		setCurrentDMId(null);
 		signOut({ redirectTo: "/welcome" });
 	};
 
-	const handleStartPrivateChat = (userId: string) => {
-		setPrivateChatId(userId);
-		setCurrentSection("messages");
+	const handleOpenDM = (dmId: string) => {
+		setCurrentDMId(dmId);
+		setCurrentSection("dms");
 	};
 
 	const handleBackFromMessages = () => {
-		setPrivateChatId(null);
+		setCurrentDMId(null);
 		setCurrentSection("dashboard");
 	};
 
@@ -154,7 +155,7 @@ export default function UserPage() {
 								: 0
 						}
 						onSectionChange={setCurrentSection}
-						onStartPrivateChat={handleStartPrivateChat}
+						onStartPrivateChat={handleOpenDM}
 						setSelectedRoom={setSelectedRoom}
 					/>
 				);
@@ -163,7 +164,7 @@ export default function UserPage() {
 			case "dms":
 				return (
 					<DirectMessages
-						chatId={privateChatId}
+						chatId={currentDMId}
 						setCurrentSection={setCurrentSection}
 						onBack={handleBackFromMessages}
 					/>
@@ -188,7 +189,7 @@ export default function UserPage() {
 						connections={githubConnections}
 						loadingConnections={loadingConnections}
 						setActiveSection={setCurrentSection}
-						setChatId={setPrivateChatId}
+						setChatId={setCurrentDMId}
 					/>
 				);
 			default:
@@ -198,7 +199,7 @@ export default function UserPage() {
 						repoCount={repos.length}
 						connections={githubConnections ? (githubConnections.followers.length + githubConnections.following.length) : 0}
 						onSectionChange={setCurrentSection}
-						onStartPrivateChat={handleStartPrivateChat}
+						onStartPrivateChat={handleOpenDM}
 						setSelectedRoom={setSelectedRoom}
 					/>
 				);
@@ -211,8 +212,8 @@ export default function UserPage() {
 				<AppSidebar
 					session={session}
 					currentSection={currentSection}
-					rooms={rooms}
-					loadingRooms={loadingRooms}
+					rooms={channels}
+					loadingRooms={loadingChannels}
 					onSectionChange={setCurrentSection}
 					setSelectedRoom={setSelectedRoom}
 					onLogout={handleLogout}
