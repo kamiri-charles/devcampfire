@@ -9,21 +9,19 @@ import { useSession } from "next-auth/react";
 import { DmOverview } from "./dm-overview";
 
 interface DirectMessagesProps {
-	dms: DMConversation[];
-	loadingDms: boolean;
 	chatId: string | null;
 	setCurrentSection: Dispatch<SetStateAction<string>>;
 	onBack: () => void;
 }
 
 export default function DirectMessages({
-	dms,
-	loadingDms,
 	chatId,
 	setCurrentSection,
 	onBack,
 }: DirectMessagesProps) {
 	const { data: session } = useSession();
+	const [dms, setDms] = useState<DMConversation[]>([]);
+	const [loadingDms, setLoadingDms] = useState(true);
 	const [dmId, setDmId] = useState(chatId);
 	const [searchQuery, setSearchQuery] = useState("");
 	const currentConversation = dms.find((conv) => conv.id === dmId);
@@ -35,20 +33,26 @@ export default function DirectMessages({
 	const [, setTick] = useState(0);
 
 	useEffect(() => {
-		if (!dmId || !session?.user) return;
+		if (!session?.user?.dbId) return;
 
-		const conv = dms.find((c) => c.id === dmId);
-		if (!conv || !conv.latestMessage) return;
-
-		const markAsRead = async () => {
-			await fetch(`/api/db/conversations/${conv.id}/read`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ lastReadMessageId: conv.latestMessage?.id }),
-			});
+		const fetchDms = async () => {
+			if (!session.user.dbId) return;
+			try {
+				const res = await fetch(
+					`/api/db/users/conversations/${session.user.dbId}`
+				);
+				if (res.ok) {
+					const data = await res.json();
+					setDms(data);
+				}
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoadingDms(false);
+			}
 		};
-		markAsRead();
-	}, [dmId, session?.user, dms]);
+		fetchDms();
+	}, [session?.user.dbId]);
 
 	// Used to trigger re-renders for relative time
 	useEffect(() => {

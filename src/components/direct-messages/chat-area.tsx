@@ -32,60 +32,10 @@ export function ChatArea({
 	const [messages, setMessages] = useState<DMMessage[]>([]);
 	const [loadingMessages, setLoadingMessages] = useState(true);
 	const [message, setMessage] = useState("");
+	const [sendingMessage, setSendingMessage] = useState(false);
 	const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 	const [isNearBottom, setIsNearBottom] = useState(true);
-
-	const handleSendMessage = async () => {
-		if (!message.trim() || !dmId) return;
-
-		const content = message.trim();
-
-		// Optimistic clear input
-		setMessage("");
-
-		try {
-			const res = await fetch(`/api/db/messages/dms/${dmId}`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ content }),
-			});
-
-			if (!res.ok) {
-				console.error("Failed to send message");
-				toast.error("Failed to send message");
-				return;
-			}
-		} catch (err) {
-			console.error("Error sending message:", err);
-		}
-	};
-
-	const handleKeyPress = (e: React.KeyboardEvent) => {
-		if (e.key === "Enter" && !e.shiftKey) {
-			e.preventDefault();
-			handleSendMessage();
-		}
-	};
-
-	const userId = session?.user?.dbId;
-	const otherParticipant = currentConversation?.participants.find(
-		(p) => p.id !== userId
-	);
-
-	
-
-	const handleScroll = () => {
-		const el = scrollAreaRef.current;
-		if (!el) return;
-
-		const threshold = 100; // px from bottom
-		const position = el.scrollTop + el.clientHeight;
-		const height = el.scrollHeight;
-
-		setIsNearBottom(position >= height - threshold);
-	};
-
 
 	useEffect(() => {
 		const fetchMessages = async () => {
@@ -108,9 +58,26 @@ export function ChatArea({
 		}
 	}, []);
 
-	useConversationChannel(dmId, (message) => {
-		setMessages((prev) => [...prev, message]);
-	});
+	useEffect(() => {
+		if (!dmId || messages.length === 0) return;
+
+		const lastMessageId = messages[messages.length - 1].id;
+
+		const markAsRead = async () => {
+			try {
+				await fetch(`/api/db/conversations/${dmId}/read`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					
+				});
+			} catch (err) {
+				console.error("Error marking messages as read:", err);
+			}
+		};
+
+		markAsRead();
+	}, [dmId, messages]);
+
 
 	useEffect(() => {
 		const el = scrollAreaRef.current;
@@ -126,8 +93,58 @@ export function ChatArea({
 		}
 	}, [messages, isNearBottom]);
 
+	const handleSendMessage = async () => {
+		if (!message.trim() || !dmId) return;
 
+		const content = message.trim();
 
+		try {
+			setSendingMessage(true);
+			const res = await fetch(`/api/db/messages/dms/${dmId}`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ content }),
+			});
+
+			if (!res.ok) {
+				console.error("Failed to send message");
+				toast.error("Failed to send message");
+				return;
+			}
+		} catch (err) {
+			console.error("Error sending message:", err);
+		} finally {
+			setMessage("");
+			setSendingMessage(false);
+		}
+	};
+
+	const handleKeyPress = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter" && !e.shiftKey) {
+			e.preventDefault();
+			handleSendMessage();
+		}
+	};
+
+	const userId = session?.user?.dbId;
+	const otherParticipant = currentConversation?.participants.find(
+		(p) => p.id !== userId
+	);
+
+	const handleScroll = () => {
+		const el = scrollAreaRef.current;
+		if (!el) return;
+
+		const threshold = 100; // px from bottom
+		const position = el.scrollTop + el.clientHeight;
+		const height = el.scrollHeight;
+
+		setIsNearBottom(position >= height - threshold);
+	};
+
+	useConversationChannel(dmId, (message) => {
+		setMessages((prev) => [...prev, message]);
+	});
 
 	if (!userId) return null;
 
@@ -272,13 +289,20 @@ export function ChatArea({
 							"user"
 						}...`}
 						className="flex-1"
+						disabled={sendingMessage}
 					/>
-					<Button
+					{!sendingMessage ? (
+						<Button
 						onClick={handleSendMessage}
 						className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
 					>
 						<Send className="w-4 h-4" />
 					</Button>
+					) : (
+						<Button disabled className="bg-gradient-to-r from-purple-500 to-purple-600">
+							<Loader2 className="w-4 h-4 animate-spin" />
+						</Button>
+					)}
 				</div>
 			</div>
 		</div>

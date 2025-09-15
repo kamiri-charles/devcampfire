@@ -1,22 +1,22 @@
 import { db } from "@/index";
 import { conversationReads } from "@/db/schema";
 import { auth } from "@/auth";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 
 export async function POST(
 	req: Request,
 	{ params }: { params: Promise<{ conversation_id: string }> }
 ) {
-    const { conversation_id } = await params;
+	const { conversation_id } = await params;
+
 	try {
-		const { lastReadMessageId } = await req.json();
 		const session = await auth();
 
-		if (!session?.user?.username) {
+		if (!session?.user?.dbId) {
 			return new Response("Unauthorized", { status: 401 });
 		}
 
-		// upsert read state
+		// fetch current record
 		const [existing] = await db
 			.select()
 			.from(conversationReads)
@@ -30,16 +30,13 @@ export async function POST(
 		if (existing) {
 			await db
 				.update(conversationReads)
-				.set({
-					lastReadMessageId,
-					updatedAt: new Date(),
-				})
+				.set({ updatedAt: new Date() })
 				.where(eq(conversationReads.id, existing.id));
 		} else {
 			await db.insert(conversationReads).values({
 				conversationId: conversation_id,
 				userId: session.user.dbId,
-				lastReadMessageId,
+				updatedAt: new Date(),
 			});
 		}
 

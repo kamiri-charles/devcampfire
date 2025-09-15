@@ -15,7 +15,6 @@ import { signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { GitHubConnections, RepoType } from "@/types/github";
 import { DBConversation } from "@/db/schema";
-import { DMConversation } from "@/types/db-customs";
 
 export default function UserPage() {
 	const [currentSection, setCurrentSection] = useState("dashboard");
@@ -28,9 +27,7 @@ export default function UserPage() {
 	const [loadingRooms, setLoadingRooms] = useState(true);
 	const [selectedRoom, setSelectedRoom] = useState<DBConversation | null>(null);
 	const [githubConnections, setGitHubConnections] = useState<GitHubConnections | null>(null);
-	const [loadingConnections, setLoadingConnections] = useState(true);
-	const [dms, setDms] = useState<DMConversation[]>([]);
-	const [loadingDms, setLoadingDms] = useState(true);
+	const [loadingConnections, setLoadingConnections] = useState(true);	
 	const { data: session, status } = useSession();
 
 	useEffect(() => {
@@ -109,21 +106,6 @@ export default function UserPage() {
 		};
 		fetchConnections();
 
-		const fetchDms = async () => {
-			if (!session?.user?.dbId) return;
-			try {
-				const res = await fetch(`/api/db/users/conversations/${session.user.dbId}`);
-				if (res.ok) {
-					const data = await res.json();
-					setDms(data);
-				}
-			} catch (e) {
-				console.error(e);
-			} finally {
-				setLoadingDms(false);
-			}
-		};
-		fetchDms();
 
 		// Before unload, set status to offline
 		const handleBeforeUnload = async () => {
@@ -180,8 +162,6 @@ export default function UserPage() {
 			case "dms":
 				return (
 					<DirectMessages
-						dms={dms}
-						loadingDms={loadingDms}
 						chatId={privateChatId}
 						setCurrentSection={setCurrentSection}
 						onBack={handleBackFromMessages}

@@ -100,12 +100,6 @@ export const conversationReads = pgTable("conversation_reads", {
 	userId: uuid("user_id")
 		.references(() => users.id, { onDelete: "cascade" })
 		.notNull(),
-	lastReadMessageId: uuid("last_read_message_id").references(
-		() => messages.id,
-		{
-			onDelete: "set null",
-		}
-	),
 	updatedAt: timestamp("updated_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),

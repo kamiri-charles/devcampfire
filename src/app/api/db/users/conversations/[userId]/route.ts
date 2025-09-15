@@ -81,18 +81,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 						)
 					);
 
-				// Count unread messages
-				const unreadCount = latestMsg
-					? await db
-							.select({ count: sql<number>`count(*)` })
-							.from(messages)
-							.where(
-								and(
-									eq(messages.conversationId, conv.id),
-									gt(messages.createdAt, readRow?.updatedAt ?? new Date(0))
-								)
-							)
-					: 0;
+				// If no readRow exists, user hasn’t opened conversation → unread = all messages
+				const unreadCountResult = await db
+					.select({ count: sql<number>`count(*)` })
+					.from(messages)
+					.where(
+						and(
+							eq(messages.conversationId, conv.id),
+							gt(messages.createdAt, readRow?.updatedAt ?? new Date(0))
+						)
+					);
+
+				const unreadCount = unreadCountResult[0]?.count ?? 0;
+
 
 				return {
 					...conv,

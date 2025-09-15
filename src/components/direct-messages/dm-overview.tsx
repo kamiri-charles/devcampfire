@@ -3,10 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "../ui/badge";
-import { DMConversation, DMMessage, DMParticipant } from "@/types/db-customs";
+import { DMConversation, DMParticipant } from "@/types/db-customs";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { pusherClient } from "@/lib/pusher-client";
 import { useConversationChannel } from "@/hooks/user-pusher";
 
 interface DmOverviewProps {
@@ -21,8 +20,7 @@ export function DmOverview({ conversation, dmId, setDmId }: DmOverviewProps) {
 	const { data: session } = useSession();
 
 	useEffect(() => {
-		if (!session?.user.dbId || !conversation.id) return;
-		
+		if (!session?.user.dbId || !conversation.id) return;		
 		const other = conversation.participants.find(
 			(p) => p.id !== session?.user?.dbId
 		);
@@ -37,8 +35,6 @@ export function DmOverview({ conversation, dmId, setDmId }: DmOverviewProps) {
 			updatedAt: message.updatedAt,
 		}));
 	});
-
-
 
 	return (
 		<div
@@ -66,7 +62,7 @@ export function DmOverview({ conversation, dmId, setDmId }: DmOverviewProps) {
 						{recipient?.githubUsername || recipient?.name || "friend"}
 					</h3>
 					<div className="flex items-center space-x-1">
-						{conv.unreadCount > 0 && (
+						{conv.unreadCount >= 0 && (
 							<Badge className="bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 text-xs">
 								{conv.unreadCount}
 							</Badge>
