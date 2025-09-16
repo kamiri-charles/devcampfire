@@ -118,7 +118,7 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 					</Badge>
 				</div>
 				<p className="text-sm text-muted-foreground mt-1">
-					General discussion and community updates
+					{selectedRoom?.description || "No description provided"}
 				</p>
 			</div>
 

@@ -26,7 +26,7 @@ export function Notifications() {
 			</div>)
 		}
 		else if (notifications.length === 0) {
-			return <p className="text-sm text-gray-500">No new notifications</p>;
+			return <p className="text-sm text-gray-500 text-center mx-auto mt-8">No new notifications</p>;
 		} else {
 			return (
 				<div className="space-y-3">

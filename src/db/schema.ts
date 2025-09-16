@@ -28,10 +28,7 @@ export const users = pgTable("users", {
 	role: userRole("role").default("user").notNull(),
 	status: userStatus("status").default("offline").notNull(),
 	lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
-
 	settings: json("settings").$type<Record<string, any>>().default({}),
-
-
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),
@@ -47,6 +44,7 @@ export const conversations = pgTable("conversations", {
 
 	type: conversationType("type").notNull(),
 	name: text("name"),
+	description: text("description"),
 	createdBy: uuid("created_by").references(() => users.id, {
 		onDelete: "cascade",
 	}),
