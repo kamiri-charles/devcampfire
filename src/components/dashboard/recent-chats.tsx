@@ -1,5 +1,11 @@
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
+import {
+	Card,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardContent,
+} from "../ui/card";
 import { Badge } from "../ui/badge";
 import { MessageCircle, Hash, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -11,25 +17,19 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
 
 interface RecentChatsProps {
-    onStartPrivateChat: (userId: string) => void;
-    onSectionChange: (section: string) => void;
+	handleOpenDM: (conversationId: string) => void;
+	setCurrentSection: Dispatch<SetStateAction<string>>;
 	setSelectedRoom: Dispatch<SetStateAction<DBConversation | null>>;
 }
 
-interface RecentMessage {
-	type: "dm" | "room" | "channel";
-	message: DMConversation;
-}
-
-
-export function RecentChats({ onStartPrivateChat, onSectionChange, setSelectedRoom }: RecentChatsProps) {
-	//const max_recent_chats = 5;
-	const [dms, setDms] = useState<DMConversation[]>([]);
-	const [loadingDms, setLoadingDms] = useState(true);
+export function RecentChats({
+	handleOpenDM,
+	setCurrentSection,
+	setSelectedRoom,
+}: RecentChatsProps) {
+	const [recentDMs, setRecentDMs] = useState<DMConversation[]>([]);
+	const [loadingDMs, setLoadingDMs] = useState(true);
 	const { data: session } = useSession();
-	const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);
-
-
 
 	useEffect(() => {
 		if (!session?.user?.dbId) return;
@@ -40,36 +40,97 @@ export function RecentChats({ onStartPrivateChat, onSectionChange, setSelectedRo
 				const res = await fetch("/api/db/conversations/dms?limit=5");
 				if (res.ok) {
 					const data = await res.json();
-					setDms(data);
+					setRecentDMs(data);
 				}
 			} catch (e) {
 				console.error(e);
 			} finally {
-				setLoadingDms(false);
+				setLoadingDMs(false);
 			}
 		};
 		fetchDms();
 	}, [session?.user.dbId]);
 
-	useEffect(() => {
-		if (dms.length === 0) return;
-		setRecentMessages(dms.map((dm) => ({ type: "dm", message: dm })));
-	}, [dms]);
+	const displayCardContent = () => {
+		if (loadingDMs) {
+			return (
+				<div className="flex justify-center items-center h-40">
+					<Loader2 className="animate-spin" />
+				</div>
+			);
+		} else if (recentDMs.length === 0) {
+			return <div className="text-center text-gray-500">No recent chats</div>;
+		} else {
+			return (
+				<>
+					{recentDMs.map((recentDM) => {
+						const otherParticipant =
+							recentDM.type === "dm"
+								? recentDM.participants.find((p) => p.id !== session?.user.dbId)
+								: null;
 
+						return (
+							<div
+								key={recentDM.id}
+								className="flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors border border-transparent hover:border-purple-200"
+								onClick={() => {
+									if (recentDM.type === "dm") {
+										handleOpenDM(recentDM.id);
+										setCurrentSection("dms");
+									} else {
+										setSelectedRoom(null);
+										setCurrentSection("room");
+									}
+								}}
+							>
+								<Avatar className="w-10 h-10">
+									<AvatarImage
+										src={otherParticipant?.imageUrl || "favicon.ico"}
+									/>
+									<AvatarFallback>
+										<FontAwesomeIcon icon={faUser} />
+									</AvatarFallback>
+								</Avatar>
+
+								<div className="flex-1 min-w-0">
+									<div className="flex items-center justify-between">
+										<h4 className="truncate font-medium text-gray-900">
+											{otherParticipant?.githubUsername ||
+												otherParticipant?.name ||
+												"user"}
+										</h4>
+										<div className="flex items-center space-x-2">
+											{recentDM.unreadCount > 0 && (
+												<Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 text-xs">
+													{recentDM.unreadCount}
+												</Badge>
+											)}
+											<span className="text-xs text-gray-500">
+												{recentDM.latestMessage
+													? `${formatDistanceToNow(
+															new Date(recentDM.latestMessage.createdAt),
+															{ addSuffix: true }
+													  )}`
+													: "No messages yet"}
+											</span>
+										</div>
+									</div>
+									<p className="text-sm text-gray-600 truncate">
+										{recentDM.latestMessage?.content || "No messages yet"}
+									</p>
+								</div>
+							</div>
+						);
+					})}
+				</>
+			);
+		}
+	};
 
 	if (!session?.user.dbId) return null;
 
-	if (loadingDms) {
-		return (
-			<div className="flex items-center justify-center h-32">
-				<Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-			</div>
-		);
-	}
-
-
-  return (
-		<Card className="h-fit">
+	return (
+		<Card className="h-fit min-h-90">
 			<CardHeader className="flex flex-row items-center justify-between">
 				<div>
 					<CardTitle className="flex items-center space-x-2">
@@ -79,75 +140,7 @@ export function RecentChats({ onStartPrivateChat, onSectionChange, setSelectedRo
 					<CardDescription>Your latest conversations</CardDescription>
 				</div>
 			</CardHeader>
-			<CardContent className="space-y-4">
-				{recentMessages.map((chat) => {
-					// Get other participant for DM
-					const otherParticipant = chat.type === "dm"
-						? chat.message.participants.find((p) => p.id !== session?.user.dbId)
-						: null;
-					return (
-						<div
-							key={chat.message.id}
-							className="flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors border border-transparent hover:border-purple-200"
-							onClick={() => {
-								if (chat.type === "dm") {
-									onStartPrivateChat(chat.message.id);
-									onSectionChange("dms");
-								} else {
-									setSelectedRoom(null);
-									onSectionChange("room");
-								}
-							}}
-						>
-							{chat.type === "channel" ? (
-								<div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-									<Hash className="w-5 h-5 text-white" />
-								</div>
-							) : (
-								<Avatar className="w-10 h-10">
-									{/* Get avatar src from other participant */}
-									<AvatarImage
-										src={otherParticipant?.imageUrl || "favicon.ico"}
-									/>
-									<AvatarFallback>
-										<FontAwesomeIcon icon={faUser} />
-									</AvatarFallback>
-								</Avatar>
-							)}
-							<div className="flex-1 min-w-0">
-								<div className="flex items-center justify-between">
-									<h4 className="truncate font-medium text-gray-900">
-										{chat.type === "channel"
-											? `#${chat.message.name}`
-											: chat.message.name}
-									</h4>
-									<div className="flex items-center space-x-2">
-										{chat.message.unreadCount > 0 && (
-											<Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 text-xs">
-												{chat.message.unreadCount}
-											</Badge>
-										)}
-										<span className="text-xs text-gray-500">
-											{chat.message.latestMessage
-												? `${formatDistanceToNow(
-														new Date(chat.message.latestMessage.createdAt),
-														{ addSuffix: true }
-												  )}`
-												: "No messages yet"}
-										</span>
-									</div>
-								</div>
-								<p className="text-sm text-gray-600 truncate">
-									{chat.message.latestMessage?.content || "No messages yet"}
-								</p>
-								{chat.type === "channel" && (
-									<p className="text-xs text-gray-500">"room" members</p>
-								)}
-							</div>
-						</div>
-					);
-})}
-			</CardContent>
+			<CardContent className="space-y-4">{displayCardContent()}</CardContent>
 		</Card>
 	);
 }

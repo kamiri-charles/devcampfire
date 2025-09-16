@@ -1,6 +1,6 @@
 import { db } from "@/index";
 import { users } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { inArray, and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -17,10 +17,17 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ users: [] });
 	}
 
-	const found = await db
-		.select()
-		.from(users)
-		.where(inArray(users.githubUsername, usernames));
+	 const found = await db
+			.select()
+			.from(users)
+			.where(
+				and(
+					inArray(users.githubUsername, usernames),
+					eq(users.status, "online")
+				)
+			);
+    
+
 
 	return NextResponse.json({
 		users: found.map((u) => ({

@@ -148,14 +148,9 @@ export default function UserPage() {
 					<Dashboard
 						session={session}
 						repoCount={repos.length}
-						connections={
-							githubConnections
-								? githubConnections.followers.length +
-								  githubConnections.following.length
-								: 0
-						}
-						onSectionChange={setCurrentSection}
-						onStartPrivateChat={handleOpenDM}
+						connections={githubConnections}
+						setCurrentSection={setCurrentSection}
+						handleOpenDM={handleOpenDM}
 						setSelectedRoom={setSelectedRoom}
 					/>
 				);
@@ -197,9 +192,9 @@ export default function UserPage() {
 					<Dashboard
 						session={session}
 						repoCount={repos.length}
-						connections={githubConnections ? (githubConnections.followers.length + githubConnections.following.length) : 0}
-						onSectionChange={setCurrentSection}
-						onStartPrivateChat={handleOpenDM}
+						connections={githubConnections}
+						setCurrentSection={setCurrentSection}
+						handleOpenDM={handleOpenDM}
 						setSelectedRoom={setSelectedRoom}
 					/>
 				);

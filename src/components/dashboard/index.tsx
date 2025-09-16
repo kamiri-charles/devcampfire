@@ -10,13 +10,14 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { MessageCircle, Users, TrendingUp } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import { DBConversation } from "@/db/schema";
+import { GitHubConnections } from "@/types/github";
 
 interface DashboardProps {
 	session: Session | null;
 	repoCount: number;
-	connections: number;
-	onSectionChange: (section: string) => void;
-	onStartPrivateChat: (userId: string) => void;
+	connections: GitHubConnections | null;
+	setCurrentSection: Dispatch<SetStateAction<string>>;
+	handleOpenDM: (conversationId: string) => void;
 	setSelectedRoom: Dispatch<SetStateAction<DBConversation | null>>;
 }
 
@@ -24,10 +25,12 @@ export default function Dashboard({
 	session,
 	repoCount,
 	connections,
-	onSectionChange,
-	onStartPrivateChat,
+	setCurrentSection,
+	handleOpenDM,
 	setSelectedRoom,
 }: DashboardProps) {
+
+	const connectionCount = connections ? connections.followers.length + connections.following.length : 0;
 
 	if (!session) return null;
 
@@ -63,7 +66,7 @@ export default function Dashboard({
 								<Users className="w-5 h-5" />
 								<div>
 									<p className="text-sm opacity-90">Connections</p>
-									<p className="text-xl font-semibold">{connections}</p>
+									<p className="text-xl font-semibold">{connectionCount}</p>
 								</div>
 							</div>
 						</CardContent>
@@ -97,15 +100,15 @@ export default function Dashboard({
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Left column */}
 					<div className="lg:col-span-2 space-y-6">
-						<RecentChats onSectionChange={onSectionChange} onStartPrivateChat={onStartPrivateChat} setSelectedRoom={setSelectedRoom} />
-						<RecentActivity onSectionChange={onSectionChange} onStartPrivateChat={onStartPrivateChat} />
+						<RecentChats setCurrentSection={setCurrentSection} handleOpenDM={handleOpenDM} setSelectedRoom={setSelectedRoom} />
+						<RecentActivity setCurrentSection={setCurrentSection} handleOpenDM={handleOpenDM} connections={connections} />
 					</div>
 
 					{/* Right column */}
 					<div className="space-y-6 lg:h-fit">
 						<Notifications />
 						<Trending />
-						<QuickActions onSectionChange={onSectionChange} />
+						<QuickActions setCurrentSection={setCurrentSection} />
 					</div>
 				</div>
 			</div>
