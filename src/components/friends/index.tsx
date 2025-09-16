@@ -35,7 +35,7 @@ export default function Friends({
 	connections,
 	loadingConnections,
 	setActiveSection,
-	setChatId
+	setChatId,
 }: FriendsProps) {
 	const [activeTab, setActiveTab] = useState<
 		"mutual" | "following" | "followers" | "in-app"
@@ -50,8 +50,6 @@ export default function Friends({
 		Record<string, "loading" | "exists" | "not-found">
 	>({});
 	const [inAppUsers, setInAppUsers] = useState<GitHubUserLite[]>([]);
-
-
 	// Decide which list to use
 	const currentList: GitHubUserLite[] = useMemo(() => {
 		if (!connections) return [];
@@ -93,43 +91,10 @@ export default function Friends({
 		);
 	}, [searchQuery, currentList, connections]);
 
-	const totalPages = Math.ceil(filteredList.length / perPage);
-
 	const paginatedList = useMemo(() => {
 		const start = (page - 1) * perPage;
 		return filteredList.slice(start, start + perPage);
 	}, [page, filteredList]);
-
-	const getStatusColor = (status: string) => {
-		switch (status) {
-			case "online":
-				return "bg-emerald-500";
-			case "away":
-				return "bg-yellow-500";
-			case "offline":
-				return "bg-gray-400";
-			default:
-				return "bg-gray-400";
-		}
-	};
-
-	async function openDM(targetUsername: string) {
-		try {
-			const res = await fetch("/api/db/conversations", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ targetUsername }),
-			});
-
-			const data = await res.json();
-			if (data.conversationId) {
-				setActiveSection("dms");
-				setChatId(data.conversationId);
-			}
-		} catch (err) {
-			console.error("Failed to open DM:", err);
-		}
-	}
 
 	// Fetch enriched data for displayed users
 	useEffect(() => {
@@ -235,6 +200,39 @@ export default function Friends({
 	useEffect(() => {
 		setPage(1);
 	}, [activeTab, searchQuery]);
+
+	const totalPages = Math.ceil(filteredList.length / perPage);
+
+	const getStatusColor = (status: string) => {
+		switch (status) {
+			case "online":
+				return "bg-emerald-500";
+			case "away":
+				return "bg-yellow-500";
+			case "offline":
+				return "bg-gray-400";
+			default:
+				return "bg-gray-400";
+		}
+	};
+
+	async function openDM(targetUsername: string) {
+		try {
+			const res = await fetch("/api/db/conversations", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ targetUsername }),
+			});
+
+			const data = await res.json();
+			if (data.conversationId) {
+				setActiveSection("dms");
+				setChatId(data.conversationId);
+			}
+		} catch (err) {
+			console.error("Failed to open DM:", err);
+		}
+	}
 
 	if (loadingConnections) {
 		return (
