@@ -7,14 +7,13 @@ import { RecentActivity } from "./recent-activity";
 import { Card, CardContent } from "../ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { MessageCircle, Users, TrendingUp } from "lucide-react";
+import { Users, TrendingUp } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import { DBConversation } from "@/db/schema";
 import { GitHubConnections } from "@/types/github";
 
 interface DashboardProps {
 	session: Session | null;
-	repoCount: number;
 	connections: GitHubConnections | null;
 	setCurrentSection: Dispatch<SetStateAction<string>>;
 	handleOpenDM: (conversationId: string) => void;
@@ -23,7 +22,6 @@ interface DashboardProps {
 
 export default function Dashboard({
 	session,
-	repoCount,
 	connections,
 	setCurrentSection,
 	handleOpenDM,
@@ -39,7 +37,11 @@ export default function Dashboard({
 			<div className="max-w-7xl mx-auto space-y-6">
 				<div className="mb-8">
 					<h1 className="text-2xl md:text-3xl bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
-						Welcome back, {session?.user.name?.split(" ")[0] || session?.user.username || "User"}!
+						Welcome back,{" "}
+						{session?.user.name?.split(" ")[0] ||
+							session?.user.username ||
+							"User"}
+						!
 					</h1>
 					<p className="text-muted-foreground mt-2">
 						Here's what's happening in your developer community
@@ -51,18 +53,6 @@ export default function Dashboard({
 					<Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
 						<CardContent className="p-4">
 							<div className="flex items-center space-x-2">
-								<MessageCircle className="w-5 h-5" />
-								<div>
-									<p className="text-sm opacity-90">Messages</p>
-									<p className="text-xl font-semibold">0</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0">
-						<CardContent className="p-4">
-							<div className="flex items-center space-x-2">
 								<Users className="w-5 h-5" />
 								<div>
 									<p className="text-sm opacity-90">Connections</p>
@@ -72,19 +62,21 @@ export default function Dashboard({
 						</CardContent>
 					</Card>
 
-					<Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0">
+					<Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0">
 						<CardContent className="p-4">
 							<div className="flex items-center space-x-2">
 								<FontAwesomeIcon icon={faGithub} className="w-5 h-5" />
 								<div>
 									<p className="text-sm opacity-90">Repos</p>
-									<p className="text-xl font-semibold">{repoCount}</p>
+									<p className="text-xl font-semibold">
+										{session.user.public_repos || 0}
+									</p>
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
+					<Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0">
 						<CardContent className="p-4">
 							<div className="flex items-center space-x-2">
 								<TrendingUp className="w-5 h-5" />
@@ -100,8 +92,16 @@ export default function Dashboard({
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Left column */}
 					<div className="lg:col-span-2 space-y-6">
-						<RecentChats setCurrentSection={setCurrentSection} handleOpenDM={handleOpenDM} setSelectedRoom={setSelectedRoom} />
-						<RecentActivity setCurrentSection={setCurrentSection} handleOpenDM={handleOpenDM} connections={connections} />
+						<RecentChats
+							setCurrentSection={setCurrentSection}
+							handleOpenDM={handleOpenDM}
+							setSelectedRoom={setSelectedRoom}
+						/>
+						<RecentActivity
+							setCurrentSection={setCurrentSection}
+							handleOpenDM={handleOpenDM}
+							connections={connections}
+						/>
 					</div>
 
 					{/* Right column */}

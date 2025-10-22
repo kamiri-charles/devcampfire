@@ -1,7 +1,3 @@
-import type { components } from "@octokit/openapi-types";
-
-export type RepoType = components["schemas"]["repository"];
-
 export type GitHubUserLite = {
 	id: number;
 	username: string;

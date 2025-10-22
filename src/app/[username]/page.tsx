@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { DBConversation } from "@/db/schema";
-import { GitHubConnections, RepoType } from "@/types/github";
+import { GitHubConnections } from "@/types/github";
 import AppSidebar from "@/components/app-sidebar";
 import MobileNav from "@/components/mobile-nav";
 import Dashboard from "@/components/dashboard";
@@ -21,8 +21,6 @@ export default function UserPage() {
 	const [currentDMId, setCurrentDMId] = useState<string | null>(null);
 	const [languages, setLanguages] = useState<string[]>([]);
 	const [loadingLanguages, setLoadingLanguages] = useState(true);
-	const [repos, setRepos] = useState<RepoType[]>([]);
-	const [loadingRepos, setLoadingRepos] = useState(true);
 	const [channels, setChannels] = useState<DBConversation[]>([]);
 	const [loadingChannels, setLoadingChannels] = useState(true);
 	const [selectedRoom, setSelectedRoom] = useState<DBConversation | null>(null);
@@ -61,20 +59,6 @@ export default function UserPage() {
 		};
 		fetchLanguages();
 
-		const fetchRepos = async () => {
-			try {
-				const res = await fetch("/api/github/repos");
-				if (res.ok) {
-					const data = await res.json();
-					setRepos(data);
-				}
-			} catch (e) {
-				console.error(e);
-			} finally {
-				setLoadingRepos(false);
-			}
-		};
-		fetchRepos();
 
 		const fetchRooms = async () => {
 			try {
@@ -147,7 +131,6 @@ export default function UserPage() {
 				return (
 					<Dashboard
 						session={session}
-						repoCount={repos.length}
 						connections={githubConnections}
 						setCurrentSection={setCurrentSection}
 						handleOpenDM={handleOpenDM}
@@ -170,8 +153,6 @@ export default function UserPage() {
 						session={session}
 						languages={languages}
 						loadingLanguages={loadingLanguages}
-						repos={repos}
-						loadingRepos={loadingRepos}
 					/>
 				);
 			case "collab":
@@ -191,7 +172,6 @@ export default function UserPage() {
 				return (
 					<Dashboard
 						session={session}
-						repoCount={repos.length}
 						connections={githubConnections}
 						setCurrentSection={setCurrentSection}
 						handleOpenDM={handleOpenDM}

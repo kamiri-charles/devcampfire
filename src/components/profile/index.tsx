@@ -10,21 +10,16 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Skeleton } from "../ui/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { ExternalLink, Users } from "lucide-react";
-import { RepoType } from "@/types/github";
-import { Repos } from "./repos";
 
 interface ProfileProps {
 	session: Session | null;
 	languages: string[];
 	loadingLanguages: boolean;
-	repos: RepoType[];
-	loadingRepos: boolean;
 }
 
 const mockActivity = [
@@ -52,8 +47,6 @@ export default function Profile({
 	session,
 	languages,
 	loadingLanguages,
-	repos,
-	loadingRepos,
 }: ProfileProps) {
 	return (
 		<div className="flex-1 p-6 overflow-y-auto">
@@ -131,65 +124,48 @@ export default function Profile({
 					</CardContent>
 				</Card>
 
-				{/* Tabs for different sections */}
-				<Tabs defaultValue="repos" className="space-y-6">
-					<TabsList className="grid w-full grid-cols-3">
-						<TabsTrigger value="repos">Repositories</TabsTrigger>
-						<TabsTrigger value="activity">Activity</TabsTrigger>
-						<TabsTrigger value="contributions">Contributions</TabsTrigger>
-					</TabsList>
-
-					<Repos repos={repos} loadingRepos={loadingRepos} />
-
-					<TabsContent value="activity" className="space-y-4">
-						{mockActivity.map((activity, index) => (
-							<Card key={index}>
-								<CardContent className="p-4">
-									<div className="flex items-center space-x-3">
-										<div className="w-2 h-2 bg-green-500 rounded-full"></div>
-										<div className="flex-1">
-											<p className="text-sm">
-												{activity.action}{" "}
-												<span className="font-medium">{activity.target}</span>
-											</p>
-											<p className="text-xs text-muted-foreground">
-												{activity.time}
-											</p>
-										</div>
-									</div>
-								</CardContent>
-							</Card>
-						))}
-					</TabsContent>
-
-					<TabsContent value="contributions">
-						<Card>
-							<CardHeader>
-								<CardTitle>Contribution Activity</CardTitle>
-								<CardDescription>
-									Your coding activity over time
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="flex items-center space-x-2 mb-4">
-									<div className="text-sm text-muted-foreground">Less</div>
-									<div className="flex space-x-1">
-										<div className="w-3 h-3 bg-muted rounded-sm"></div>
-										<div className="w-3 h-3 bg-green-200 rounded-sm"></div>
-										<div className="w-3 h-3 bg-green-400 rounded-sm"></div>
-										<div className="w-3 h-3 bg-green-600 rounded-sm"></div>
-										<div className="w-3 h-3 bg-green-800 rounded-sm"></div>
-									</div>
-									<div className="text-sm text-muted-foreground">More</div>
+				{mockActivity.map((activity, index) => (
+					<Card key={index}>
+						<CardContent className="p-4">
+							<div className="flex items-center space-x-3">
+								<div className="w-2 h-2 bg-green-500 rounded-full"></div>
+								<div className="flex-1">
+									<p className="text-sm">
+										{activity.action}{" "}
+										<span className="font-medium">{activity.target}</span>
+									</p>
+									<p className="text-xs text-muted-foreground">
+										{activity.time}
+									</p>
 								</div>
-								<p className="text-sm text-muted-foreground">
-									Total contributions this year:{" "}
-									<span className="font-medium">1,247</span>
-								</p>
-							</CardContent>
-						</Card>
-					</TabsContent>
-				</Tabs>
+							</div>
+						</CardContent>
+					</Card>
+				))}
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Contribution Activity</CardTitle>
+						<CardDescription>Your coding activity over time</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="flex items-center space-x-2 mb-4">
+							<div className="text-sm text-muted-foreground">Less</div>
+							<div className="flex space-x-1">
+								<div className="w-3 h-3 bg-muted rounded-sm"></div>
+								<div className="w-3 h-3 bg-green-200 rounded-sm"></div>
+								<div className="w-3 h-3 bg-green-400 rounded-sm"></div>
+								<div className="w-3 h-3 bg-green-600 rounded-sm"></div>
+								<div className="w-3 h-3 bg-green-800 rounded-sm"></div>
+							</div>
+							<div className="text-sm text-muted-foreground">More</div>
+						</div>
+						<p className="text-sm text-muted-foreground">
+							Total contributions this year:{" "}
+							<span className="font-medium">1,247</span>
+						</p>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);
