@@ -9,16 +9,14 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faCaretLeft, faCaretRight, faChartLine, faFire, faUsers } from "@fortawesome/free-solid-svg-icons";
-import { useRouter, redirect } from "next/navigation";
-import { getSession, signIn, useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { auth } from "@/auth";
 
 export default function GetStarted() {
 
-	const router = useRouter();
 	const session = useSession();
 
 	useEffect(() => {
@@ -79,7 +77,7 @@ export default function GetStarted() {
 						Continue with GitHub
 					</Button>
 					<p className="text-sm text-muted-foreground text-center">
-						Your profile will auto-import your repositories and languages
+						Your profile will auto-import your GitHub profile data
 					</p>
 
 					<div className="pt-4 text-center">
