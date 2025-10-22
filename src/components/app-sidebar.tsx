@@ -1,37 +1,47 @@
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	useSidebar,
 } from "./ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { 
-  Home,
-  User, 
-  Users, 
-  Search, 
-  Settings,
-  Hash,
-  LogOut,
-  Send,
-  ChevronUp,
-  Heart,
-  Loader2
+import {
+	Home,
+	User,
+	Users,
+	Search,
+	Settings,
+	Hash,
+	LogOut,
+	Send,
+	ChevronUp,
+	Heart,
+	Loader2,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretLeft, faFire, faCaretRight, faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCaretLeft,
+	faFire,
+	faCaretRight,
+	faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { Session } from "next-auth";
 import Link from "next/link";
-import { Skeleton } from "./ui/skeleton";
 import { DBConversation } from "@/db/schema";
 import { Dispatch, SetStateAction } from "react";
 
@@ -45,51 +55,58 @@ interface AppSidebarProps {
 	onLogout: () => void;
 }
 
-
 const mainNavItems = [
-  {
-    id: "dashboard",
-    title: "Dashboard",
-    icon: Home,
-    isActive: false
-  },
-  {
-    id: "dms",
-    title: "Direct Messages",
-    icon: Send,
-    isActive: false
-  },
-  {
-    id: "friends",
-    title: "Friends",
-    icon: Heart,
-    isActive: false
-  },
-  {
-    id: "profile",
-    title: "My Profile",
-    icon: User,
-    isActive: false
-  },
-  {
-    id: "collab",
-    title: "Collaboration",
-    icon: Users,
-    isActive: false
-  },
-  {
-    id: "discovery",
-    title: "Discovery",
-    icon: Search,
-    isActive: false
-  }
+	{
+		id: "dashboard",
+		title: "Dashboard",
+		icon: Home,
+		isActive: false,
+	},
+	{
+		id: "dms",
+		title: "Direct Messages",
+		icon: Send,
+		isActive: false,
+	},
+	{
+		id: "friends",
+		title: "Friends",
+		icon: Heart,
+		isActive: false,
+	},
+	{
+		id: "profile",
+		title: "My Profile",
+		icon: User,
+		isActive: false,
+	},
+	{
+		id: "collab",
+		title: "Collaboration",
+		icon: Users,
+		isActive: false,
+	},
+	{
+		id: "discovery",
+		title: "Discovery",
+		icon: Search,
+		isActive: false,
+	},
 ];
 
-export default function AppSidebar({ session, currentSection, rooms, loadingRooms, onSectionChange, setSelectedRoom, onLogout }: AppSidebarProps) {
-  const { state } = useSidebar();
-  const isCollapsed = state === "collapsed";
+export default function AppSidebar({
+	session,
+	currentSection,
+	rooms,
+	loadingRooms,
+	onSectionChange,
+	setSelectedRoom,
+	onLogout,
+}: AppSidebarProps) {
+	const { state } = useSidebar();
+	const isCollapsed = state === "collapsed";
 
-  return (
+	return (
 		<Sidebar collapsible="icon" className="border-r border-purple-200/50">
 			<SidebarHeader className="border-b border-purple-200/50 bg-gradient-to-r from-purple-50 to-orange-50">
 				<SidebarMenu>
@@ -157,22 +174,24 @@ export default function AppSidebar({ session, currentSection, rooms, loadingRoom
 							{loadingRooms ? (
 								<Loader2 className="animate-spin mx-auto mt-2" />
 							) : rooms.length > 0 ? (
-
-								rooms.map((room) => (
-									<SidebarMenuItem key={room.id}>
-										<SidebarMenuButton
-											tooltip={`#${room.name}`}
-											onClick={() => {
-												setSelectedRoom(room);
-												onSectionChange("room");
-											}}
-											className="text-muted-foreground hover:text-foreground hover:bg-purple-50 cursor-pointer"
-										>
-											<Hash className="size-4" />
-											<span>{room.name?.toLowerCase()}</span>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								))
+								rooms
+									.slice()
+									.sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+									.map((room) => (
+										<SidebarMenuItem key={room.id}>
+											<SidebarMenuButton
+												tooltip={`#${room.name}`}
+												onClick={() => {
+													setSelectedRoom(room);
+													onSectionChange("room");
+												}}
+												className="text-muted-foreground hover:text-foreground hover:bg-purple-50 cursor-pointer"
+											>
+												<Hash className="size-4" />
+												<span>{room.name?.toLowerCase()}</span>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									))
 							) : (
 								<div className="text-sm text-center mt-2 text-muted-foreground px-2 py-1">
 									There was an error getting the channels

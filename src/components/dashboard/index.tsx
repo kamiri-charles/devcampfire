@@ -1,14 +1,13 @@
+import { Dispatch, SetStateAction } from "react";
 import { Session } from "next-auth";
 import { RecentChats } from "./recent-chats";
 import { Notifications } from "./notifications";
-import { Trending } from "./trending";
 import { QuickActions } from "./quick-actions";
 import { RecentActivity } from "./recent-activity";
 import { Card, CardContent } from "../ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { Users, TrendingUp } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
 import { DBConversation } from "@/db/schema";
 import { GitHubConnections } from "@/types/github";
 
@@ -107,7 +106,6 @@ export default function Dashboard({
 					{/* Right column */}
 					<div className="space-y-6 lg:h-fit">
 						<Notifications />
-						<Trending />
 						<QuickActions setCurrentSection={setCurrentSection} />
 					</div>
 				</div>
