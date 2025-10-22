@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
@@ -12,6 +12,8 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
 import { pusherClient } from "@/lib/pusher-client";
 import { toast } from "sonner";
+import { GitHubUserEnriched } from "@/types/github";
+import { MentionDisplay } from "./mention-display";
 
 interface RoomMessagesProps {
 	selectedRoom: DBConversation | null;
@@ -24,6 +26,10 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 	const [sendingMessage, setSendingMessage] = useState(false);
 	const [, setTick] = useState(0);
 	const bottomRef = useRef<HTMLDivElement | null>(null);
+	const [searchResults, setSearchResults] = useState<GitHubUserEnriched[]>([]);
+	const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+	const [showMentions, setShowMentions] = useState(false);
+	const [mentionQuery, setMentionQuery] = useState("");
 
 	useEffect(() => {
 		if (!selectedRoom?.id) return;
@@ -63,6 +69,27 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 		}
 	}, [messages]);
 
+	useEffect(() => {
+		if (!mentionQuery) {
+			setSearchResults([]);
+			return;
+		}
+
+		if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+		searchTimeout.current = setTimeout(async () => {
+			try {
+				const res = await fetch(`/api/db/users/search?q=${mentionQuery}&limit=5`);
+				if (res.ok) {
+					const data = await res.json();
+					setSearchResults(data);
+				}
+			} catch (e) {
+				console.error("Failed to fetch users", e);
+			}
+		}, 300); // debounce
+	}, [mentionQuery]);
+
 	// Used to trigger re-renders for relative time
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -71,6 +98,25 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 
 		return () => clearInterval(interval);
 	}, []);
+
+	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const val = e.target.value;
+		setMessage(val);
+
+		const cursor = e.target.selectionStart ?? 0;
+		const textUpToCursor = val.slice(0, cursor);
+
+		// Find last "@" before cursor
+		const match = textUpToCursor.match(/@([\w]*)$/);
+		if (match) {
+			setShowMentions(true);
+			setMentionQuery(match[1]); // text typed after "@"
+		} else {
+			setShowMentions(false);
+			setMentionQuery("");
+		}
+	};
+
 
 	const handleSendMessage = async () => {
 		if (!message.trim()) return;
@@ -101,6 +147,28 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 			handleSendMessage();
 		}
 	};
+
+	const mentionRegex = /@([\w]+)/g;
+
+	function renderMessageContent(content: string) {
+		const parts = content.split(mentionRegex);
+
+		return parts.map((part, i) => {
+			if (i % 2 === 1) {
+				// This is a mention
+				return (
+					<span
+						key={i}
+						className="text-purple-600 hover:underline font-medium"
+					>
+						@{part}
+					</span>
+				);
+			}
+			return <span key={i}>{part}</span>;
+		});
+	}
+
 
 	return (
 		<div className="flex-1 flex flex-col h-screen">
@@ -159,7 +227,7 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 												: ""}
 										</span>
 									</div>
-									<p className="text-sm text-gray-800">{msg.content}</p>
+									<p className="text-sm text-gray-800">{renderMessageContent(msg.content)}</p>
 								</div>
 							</div>
 						))
@@ -175,19 +243,37 @@ export default function RoomMessages({ selectedRoom }: RoomMessagesProps) {
 				<div className="flex space-x-2">
 					<Input
 						value={message}
-						onChange={(e) => setMessage(e.target.value)}
+						onChange={handleInputChange}
 						onKeyDown={handleKeyPress}
 						placeholder={`Message #${
 							selectedRoom?.name?.toLowerCase() || "channel"
 						}`}
 						className="flex-1 bg-white/80"
 					/>
-					<Button
-						onClick={handleSendMessage}
-						className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
-					>
-						<Send className="w-4 h-4" />
-					</Button>
+					{showMentions && (
+						<MentionDisplay
+							searchResults={searchResults}
+							message={message}
+							setMessage={setMessage}
+							setShowMentions={setShowMentions}
+						/>
+					)}
+
+					{!sendingMessage ? (
+						<Button
+							onClick={handleSendMessage}
+							className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 cursor-pointer"
+						>
+							<Send className="w-4 h-4" />
+						</Button>
+					) : (
+						<Button
+							className="bg-gradient-to-r from-purple-500 to-purple-600"
+							disabled
+						>
+							<Loader2 className="w-4 h-4 animate-spin" />
+						</Button>
+					)}
 				</div>
 				<div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
 					<span>Press Enter to send, Shift+Enter for new line</span>

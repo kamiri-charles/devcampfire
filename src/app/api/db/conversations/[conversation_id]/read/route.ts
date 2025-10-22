@@ -1,7 +1,7 @@
 import { db } from "@/index";
 import { conversationReads } from "@/db/schema";
 import { auth } from "@/auth";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function POST(
 	req: Request,

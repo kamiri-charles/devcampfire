@@ -30,7 +30,6 @@ export async function GET() {
 		const following = await followingRes.json();
 
 		// Sets for comparisons
-		const followerSet = new Set(followers.map((f: any) => f.login));
 		const followingSet = new Set(following.map((f: any) => f.login));
 
 		// Mutuals
