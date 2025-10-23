@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevCampfire
+
+**DevCampfire** is a social app built with **Next.js** that lets developers connect through their GitHub profiles.  
+It visualizes **followers**, **following**, and **mutuals**, while offering a **real-time chat** powered by **Pusher**.  
+
+The goal is to make connecting with other developers as simple and natural as chatting around a campfire. 🏕️  
+
+---
+
+## Tech Stack
+
+| Feature | Technology |
+|----------|-------------|
+| Frontend | [Next.js](https://nextjs.org/) (App Router) |
+| Authentication | [NextAuth.js](https://authjs.dev/) (GitHub Provider) |
+| Database | [Neon](https://neon.tech/) (PostgreSQL) |
+| ORM | [Drizzle](https://orm.drizzle.team/) |
+| Real-time Chat | [Pusher](https://pusher.com/) |
+| Styling | Tailwind CSS + Shadcn UI |
+| Hosting | Vercel |
+
+---
+
+## Features
+
+- 🔐 **GitHub OAuth** login  
+- 👥 View **followers**, **following**, and **mutual connections**  
+- 💬 **Real-time chat** with other connected users  
+- 🗃️ Data stored securely in **Neon PostgreSQL**  
+- ⚡ Modern UI using **Tailwind** and **Shadcn** components  
+- 🧩 Modular architecture for easy contribution and scaling  
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-username/devcampfire.git
+cd devcampfire
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
+````npm install````
+or
+```pnpm install``` or ```yarn install```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+WiP
 
-## Learn More
+### 4. Set up the database
+WiP
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Run the development server
+```npm run dev```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Then open http://localhost:3000
+ in your browser.
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+We welcome contributions! 🎉
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Fork the repo
+
+Create a new branch (git checkout -b feature/your-feature-name)
+
+Commit your changes (git commit -m 'Add feature X')
+
+Push your branch (git push origin feature/your-feature-name)
+
+Open a Pull Request
+
+Please ensure your code follows our linting and formatting rules. Run:
+```
+npm run lint
+npm run format
+```
+
+## Project Structure
+```
+┣ 📂devcampfire/src
+┃ ┣ 📂app               # Next.js App Router (routes, layouts, and pages)
+┃ ┃ ┣ 📂[username]      # Dynamic routes for user profiles
+┃ ┃ ┣ 📂api             # API endpoints (e.g., GitHub data, chat, auth)
+┃ ┃ ┣ 📂kindling        # Loader page
+┃ ┃ ┣ 📂welcome         # Landing experience for new users
+┃ ┣ 📂components        # Reusable UI components
+┃ ┣ 📂db                # DB schema
+┃ ┣ 📂hooks             # Custom React hooks
+┃ ┣ 📂lib               # Utilities, helpers, and third-party integrations
+┃ ┣ 📂types             # TypeScript type definitions and interfaces
+┃ ┣ 📜auth.ts           # NextAuth configuration and GitHub provider setup
+┃ ┣ 📜index.ts          # DB config
+┗ ┣ 📜middleware.ts     # Next.js middleware
+
+```
+
+
+## License
+
+This project is licensed under the MIT License.
