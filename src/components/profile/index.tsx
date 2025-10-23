@@ -6,9 +6,7 @@ import { Button } from "../ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
-	CardTitle,
 } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,27 +19,6 @@ interface ProfileProps {
 	languages: string[];
 	loadingLanguages: boolean;
 }
-
-const mockActivity = [
-	{
-		type: "repo",
-		action: "Created repository",
-		target: "awesome-react-hooks",
-		time: "2 days ago",
-	},
-	{
-		type: "pr",
-		action: "Merged pull request in",
-		target: "facebook/react",
-		time: "1 week ago",
-	},
-	{
-		type: "issue",
-		action: "Opened issue in",
-		target: "vercel/next.js",
-		time: "2 weeks ago",
-	},
-];
 
 export default function Profile({
 	session,
@@ -124,48 +101,17 @@ export default function Profile({
 					</CardContent>
 				</Card>
 
-				{mockActivity.map((activity, index) => (
-					<Card key={index}>
+					<Card>
+						<CardHeader>
+							<h2 className="text-lg font-semibold">Recent Activity</h2>
+						</CardHeader>
 						<CardContent className="p-4">
 							<div className="flex items-center space-x-3">
-								<div className="w-2 h-2 bg-green-500 rounded-full"></div>
-								<div className="flex-1">
-									<p className="text-sm">
-										{activity.action}{" "}
-										<span className="font-medium">{activity.target}</span>
-									</p>
-									<p className="text-xs text-muted-foreground">
-										{activity.time}
-									</p>
-								</div>
+								{/* TODO: Implement activity fetching */}
+								<p className="text-muted-foreground">No recent activity to display.</p>
 							</div>
 						</CardContent>
 					</Card>
-				))}
-
-				<Card>
-					<CardHeader>
-						<CardTitle>Contribution Activity</CardTitle>
-						<CardDescription>Your coding activity over time</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="flex items-center space-x-2 mb-4">
-							<div className="text-sm text-muted-foreground">Less</div>
-							<div className="flex space-x-1">
-								<div className="w-3 h-3 bg-muted rounded-sm"></div>
-								<div className="w-3 h-3 bg-green-200 rounded-sm"></div>
-								<div className="w-3 h-3 bg-green-400 rounded-sm"></div>
-								<div className="w-3 h-3 bg-green-600 rounded-sm"></div>
-								<div className="w-3 h-3 bg-green-800 rounded-sm"></div>
-							</div>
-							<div className="text-sm text-muted-foreground">More</div>
-						</div>
-						<p className="text-sm text-muted-foreground">
-							Total contributions this year:{" "}
-							<span className="font-medium">1,247</span>
-						</p>
-					</CardContent>
-				</Card>
 			</div>
 		</div>
 	);

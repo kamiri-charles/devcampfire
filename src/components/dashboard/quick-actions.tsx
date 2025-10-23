@@ -16,7 +16,7 @@ export function QuickActions({ setCurrentSection }: QuickActionsProps) {
 			</CardHeader>
 			<CardContent className="space-y-3">
 				<Button
-					className="w-full justify-start bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 h-12"
+					className="w-full justify-start bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 h-12 cursor-pointer"
 					onClick={() => setCurrentSection("discovery")}
 				>
 					<User className="w-4 h-4 mr-3" />
@@ -24,7 +24,7 @@ export function QuickActions({ setCurrentSection }: QuickActionsProps) {
 				</Button>
 				<Button
 					variant="outline"
-					className="w-full justify-start h-12 bg-white hover:bg-purple-50 border-purple-200 hover:border-purple-300"
+					className="w-full justify-start h-12 bg-white hover:bg-purple-50 border-purple-200 hover:border-purple-300 cursor-pointer"
 					onClick={() => setCurrentSection("collaboration")}
 				>
 					<Plus className="w-4 h-4 mr-3" />
@@ -32,7 +32,7 @@ export function QuickActions({ setCurrentSection }: QuickActionsProps) {
 				</Button>
 				<Button
 					variant="outline"
-					className="w-full justify-start h-12 bg-white hover:bg-orange-50 border-orange-200 hover:border-orange-300"
+					className="w-full justify-start h-12 bg-white hover:bg-orange-50 border-orange-200 hover:border-orange-300 cursor-pointer"
 					onClick={() => setCurrentSection("messages")}
 				>
 					<Send className="w-4 h-4 mr-3" />

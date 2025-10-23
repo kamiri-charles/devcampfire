@@ -1,7 +1,6 @@
 import {useState, Dispatch, SetStateAction, useEffect} from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,33 +12,7 @@ interface RecentActivityProps {
 	connections: GitHubConnections | null;
     setCurrentSection: Dispatch<SetStateAction<string>>;
     handleOpenDM: (conversationId: string) => void;
-}
-
-const mockRecentProjects = [
-	{
-		id: "proj1",
-		name: "dev-campfire-frontend",
-		description: "React-based developer community platform",
-		language: "TypeScript",
-		updatedAt: "2 hours ago",
-	},
-	{
-		id: "proj2",
-		name: "code-share-api",
-		description: "RESTful API for code snippet sharing",
-		language: "Node.js",
-		updatedAt: "1 day ago",
-	},
-	{
-		id: "proj3",
-		name: "github-activity-bot",
-		description: "Discord bot for GitHub notifications",
-		language: "Python",
-		updatedAt: "3 days ago",
-	},
-];
-
-	
+}	
 
 export function RecentActivity({ connections, setCurrentSection, handleOpenDM }: RecentActivityProps) {
 	const [activeFriends, setActiveFriends] = useState<GitHubUserLite[]>([]);
@@ -156,38 +129,10 @@ export function RecentActivity({ connections, setCurrentSection, handleOpenDM }:
 						/>
 						<span>Recent Projects</span>
 					</CardTitle>
-					<CardDescription>Your latest GitHub activity</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-3">
-					{mockRecentProjects.map((project) => (
-						<div
-							key={project.id}
-							className="flex items-start space-x-3 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer transition-colors"
-						>
-							<div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
-								<FontAwesomeIcon
-									icon={faGithub}
-									className="w-4 h-4 text-white"
-								/>
-							</div>
-							<div className="flex-1 min-w-0">
-								<p className="text-sm font-medium text-gray-900 truncate">
-									{project.name}
-								</p>
-								<p className="text-xs text-gray-600 line-clamp-2">
-									{project.description}
-								</p>
-								<div className="flex items-center space-x-2 mt-1">
-									<Badge className="text-xs bg-cyan-100 text-cyan-700 border-0">
-										{project.language}
-									</Badge>
-									<span className="text-xs text-gray-500">
-										{project.updatedAt}
-									</span>
-								</div>
-							</div>
-						</div>
-					))}
+					{/* TODO: Implement recent projects fetching */}
+					<p className="text-muted-foreground">No recent projects to display.</p>
 				</CardContent>
 			</Card>
 		</div>

@@ -198,7 +198,7 @@ export default function UserPage() {
 			<SidebarInset className="flex-1">
 				<div className="flex flex-col min-h-screen">
 					<header className="hidden md:flex h-14 shrink-0 items-center gap-2 border-b border-purple-200/50 bg-white/50 px-4">
-						<SidebarTrigger className="-ml-1" />
+						<SidebarTrigger className="-ml-1 cursor-pointer" />
 					</header>
 
 					<div className="flex-1 pb-16 md:pb-0">{renderCurrentSection()}</div>
