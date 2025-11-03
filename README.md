@@ -62,7 +62,7 @@ Then open http://localhost:3000
 
 ## Contributing
 
-We welcome contributions! 🎉
+Contributions are welcome!
 
 Fork the repo
 

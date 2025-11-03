@@ -7,8 +7,6 @@ import { MapPin, Github, Users, Star, MessageCircle } from 'lucide-react';
 
 interface DevelopersProps {
     searchQuery: string;
-    languageFilter: string;
-    locationFilter: string;
 }
 
 const mockDevelopers = [
@@ -29,7 +27,7 @@ const mockDevelopers = [
 	},
 ];
 
-export function Developers({searchQuery, languageFilter, locationFilter}: DevelopersProps) {
+export function Developers({searchQuery}: DevelopersProps) {
     const filteredDevelopers = mockDevelopers.filter((dev) => {
 			const matchesSearch =
 				dev.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -38,17 +36,7 @@ export function Developers({searchQuery, languageFilter, locationFilter}: Develo
 					lang.toLowerCase().includes(searchQuery.toLowerCase())
 				);
 
-			const matchesLanguage =
-				languageFilter === "all" ||
-				dev.languages.some(
-					(lang) => lang.toLowerCase() === languageFilter.toLowerCase()
-				);
-
-			const matchesLocation =
-				locationFilter === "all" ||
-				dev.location.toLowerCase().includes(locationFilter.toLowerCase());
-
-			return matchesSearch && matchesLanguage && matchesLocation;
+			return matchesSearch;
 		});
 
   return (

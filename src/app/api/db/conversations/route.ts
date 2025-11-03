@@ -2,13 +2,14 @@ import { eq } from "drizzle-orm";
 import { db } from "@/index";
 import { conversations, conversationParticipants, users, DBConversation } from "@/db/schema";
 import { auth } from "@/auth";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
 	try {
 		const { targetUsername } = await req.json();
 		const session = await auth();
 
-		if (!session?.user.username) return new Response("Unauthorized", { status: 401 });
+		if (!session?.user.username) return new NextResponse("Unauthorized", { status: 401 });
 
 		// Fetch current user
 		const [currentUser] = await db
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
 			.from(users)
 			.where(eq(users.githubUsername, session.user.username));
 
-		if (!currentUser) return new Response("User not found", { status: 404 });
+		if (!currentUser) return new NextResponse("User not found", { status: 404 });
 
 		// Fetch target user
 		const [targetUser] = await db
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
 			.where(eq(users.githubUsername, targetUsername));
 
 		if (!targetUser)
-			return new Response("Target user not found", { status: 404 });
+			return new NextResponse("Target user not found", { status: 404 });
 
 		// Get all DMs
 		const dmConversations = await db
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
 		}
 
 		if (existingDM) {
-			return new Response(JSON.stringify({ conversationId: existingDM.id }), {
+			return new NextResponse(JSON.stringify({ conversationId: existingDM.id }), {
 				status: 200,
 			});
 		}
@@ -73,12 +74,12 @@ export async function POST(req: Request) {
 			{ conversationId: newConversation.id, userId: targetUser.id },
 		]);
 
-		return new Response(
+		return new NextResponse(
 			JSON.stringify({ conversationId: newConversation.id }),
 			{ status: 201 }
 		);
 	} catch (err) {
 		console.error(err);
-		return new Response("Server error", { status: 500 });
+		return new NextResponse("Server error", { status: 500 });
 	}
 }

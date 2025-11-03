@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
-import { User, Plus, Send } from "lucide-react";
+import { User, Folder, Send } from "lucide-react";
 
 interface QuickActionsProps {
     setCurrentSection: Dispatch<SetStateAction<string>>;
@@ -23,20 +23,18 @@ export function QuickActions({ setCurrentSection }: QuickActionsProps) {
 					Find Developers
 				</Button>
 				<Button
-					variant="outline"
-					className="w-full justify-start h-12 bg-white hover:bg-purple-50 border-purple-200 hover:border-purple-300 cursor-pointer"
-					onClick={() => setCurrentSection("collaboration")}
-				>
-					<Plus className="w-4 h-4 mr-3" />
-					Start Project
-				</Button>
-				<Button
-					variant="outline"
-					className="w-full justify-start h-12 bg-white hover:bg-orange-50 border-orange-200 hover:border-orange-300 cursor-pointer"
-					onClick={() => setCurrentSection("messages")}
+					className="w-full justify-start bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 h-12 cursor-pointer"
+					onClick={() => setCurrentSection("dms")}
 				>
 					<Send className="w-4 h-4 mr-3" />
-					Send Message
+					View Messages
+				</Button>
+				<Button
+					className="w-full justify-start bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 h-12 cursor-pointer"
+					onClick={() => setCurrentSection("collab")}
+				>
+					<Folder className="w-4 h-4 mr-3" />
+					Explore Projects
 				</Button>
 			</CardContent>
 		</Card>

@@ -16,6 +16,7 @@ export const userStatus = pgEnum("user_status", [
 	"busy",
 ]);
 export const conversationType = pgEnum("conversation_type", ["dm", "group", "channel"]);
+export const projectType = pgEnum("project_type", ["public", "private", "internal"]);
 
 export const users = pgTable("users", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -103,6 +104,24 @@ export const conversationReads = pgTable("conversation_reads", {
 		.notNull(),
 });
 
+export const projects = pgTable("projects", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	name: text("name").notNull(),
+	description: text("description"),
+	type: projectType("type").default("private").notNull(),
+	ownerId: uuid("owner_id")
+		.references(() => users.id, { onDelete: "cascade" })
+		.notNull(),
+	repoUrl: text("repo_url"),
+	languages: json("languages").$type<string[]>().default([]),
+	conversationId: uuid("conversation_id")
+		.references(() => conversations.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+});
+
 
 // Types
 export type DBUser = typeof users.$inferSelect;
@@ -127,3 +146,6 @@ export type DBMessageWithSender = DBMessage & {
 
 export type DBConversationRead = typeof conversationReads.$inferSelect;
 export type DBNewConversationRead = typeof conversationReads.$inferInsert;
+
+export type DBProject = typeof projects.$inferSelect;
+export type DBNewProject = typeof projects.$inferInsert;

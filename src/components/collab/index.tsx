@@ -11,23 +11,7 @@ import {
 	CardTitle,
 } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "../ui/dialog";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../ui/select";
+
 import {
 	Plus,
 	Users,
@@ -36,6 +20,7 @@ import {
 	Calendar,
 	Search,
 } from "lucide-react";
+import { NewSpace } from "./new-space";
 
 
 const mockSpaces = [
@@ -135,68 +120,7 @@ export default function Collab() {
 							Work together on projects with repo-linked team rooms
 						</p>
 					</div>
-					<Dialog
-						open={isCreateDialogOpen}
-						onOpenChange={setIsCreateDialogOpen}
-					>
-						<DialogTrigger asChild>
-							<Button>
-								<Plus className="w-4 h-4 mr-2" />
-								Create Space
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="sm:max-w-md">
-							<DialogHeader>
-								<DialogTitle>Create Collaboration Space</DialogTitle>
-								<DialogDescription>
-									Create a new space for your project team
-								</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-4">
-								<div>
-									<Label htmlFor="space-name">Space Name</Label>
-									<Input id="space-name" placeholder="My Awesome Project" />
-								</div>
-								<div>
-									<Label htmlFor="space-description">Description</Label>
-									<Textarea
-										id="space-description"
-										placeholder="Brief description of your project..."
-										rows={3}
-									/>
-								</div>
-								<div>
-									<Label htmlFor="repo-url">GitHub Repository (Optional)</Label>
-									<Input
-										id="repo-url"
-										placeholder="https://github.com/username/repo"
-									/>
-								</div>
-								<div>
-									<Label htmlFor="privacy">Privacy</Label>
-									<Select defaultValue="public">
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="public">
-												Public - Anyone can join
-											</SelectItem>
-											<SelectItem value="private">
-												Private - Invite only
-											</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-								<Button
-									className="w-full"
-									onClick={() => setIsCreateDialogOpen(false)}
-								>
-									Create Space
-								</Button>
-							</div>
-						</DialogContent>
-					</Dialog>
+					<NewSpace isCreateDialogOpen={isCreateDialogOpen} setIsCreateDialogOpen={setIsCreateDialogOpen} />
 				</div>
 
 				{/* Search */}
