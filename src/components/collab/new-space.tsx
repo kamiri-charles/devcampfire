@@ -89,9 +89,10 @@ export function NewSpace({
 				</DialogHeader>
 				<div className="space-y-4">
 					<div>
-						<Label htmlFor="space-name">Space Name</Label>
+						<Label htmlFor="space-name">Project Name</Label>
 						<Input
 							id="space-name"
+							className="my-2"
 							placeholder="My Awesome Project"
 							value={projectName}
 							onChange={(e) => setProjectName(e.target.value)}
@@ -101,6 +102,7 @@ export function NewSpace({
 						<Label htmlFor="space-description">Description</Label>
 						<Textarea
 							id="space-description"
+							className="my-2"
 							placeholder="Brief description of your project..."
 							rows={3}
 							value={description}
@@ -111,6 +113,7 @@ export function NewSpace({
 						<Label htmlFor="repo-url">GitHub Repository (Optional)</Label>
 						<Input
 							id="repo-url"
+							className="my-2"
 							placeholder="https://github.com/username/repo"
 							value={repoUrl}
 							onChange={(e) => setRepoUrl(e.target.value)}
@@ -118,7 +121,7 @@ export function NewSpace({
 					</div>
 					<div>
 						<Label htmlFor="privacy">Privacy</Label>
-						<Select value="privacy" onValueChange={setPrivacy}>
+						<Select value={privacy} onValueChange={setPrivacy}>
 							<SelectTrigger>
 								<SelectValue />
 							</SelectTrigger>
@@ -133,11 +136,15 @@ export function NewSpace({
 						</Select>
 					</div>
 					<Button
-						className="w-full"
+						className="w-full bg-gradient-to-br from-purple-500 to-purple-600 cursor-pointer text-white hover:from-purple-600 hover:to-purple-700"
 						onClick={handle_create_space}
-                        disabled={creatingProject}
+						disabled={creatingProject}
 					>
-						{creatingProject ? <Loader2 className="animate-spin" /> : "Create Space"}
+						{creatingProject ? (
+							<Loader2 className="animate-spin" />
+						) : (
+							"Create Space"
+						)}
 					</Button>
 				</div>
 			</DialogContent>
