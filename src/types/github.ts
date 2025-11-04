@@ -14,3 +14,10 @@ export type GitHubUserEnriched = GitHubUserLite & {
 	name: string | null;
 	bio: string | null;
 };
+
+
+export type GithubConnectionReturn = {
+	id: number;
+	login: string;
+	avatar_url: string;
+}

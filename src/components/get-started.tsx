@@ -32,7 +32,7 @@ export default function GetStarted() {
 			}
 		};
 		checkAuth();
-	}, []);
+	}, [session]);
 
 	return (
 		<div className="min-h-screen w-full bg-gradient-to-br from-purple-600 via-purple-700 to-orange-600 flex items-center justify-center p-4">

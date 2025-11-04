@@ -7,7 +7,7 @@ import {
 	CardContent,
 } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { MessageCircle, Hash, Loader2 } from "lucide-react";
+import { MessageCircle, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { DMConversation } from "@/types/db-customs";

@@ -8,7 +8,6 @@ import {
 	CardContent,
 	CardHeader,
 } from "../ui/card";
-import { Skeleton } from "../ui/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
@@ -16,14 +15,10 @@ import { ExternalLink, Users } from "lucide-react";
 
 interface ProfileProps {
 	session: Session | null;
-	languages: string[];
-	loadingLanguages: boolean;
 }
 
 export default function Profile({
 	session,
-	languages,
-	loadingLanguages,
 }: ProfileProps) {
 	return (
 		<div className="flex-1 p-6 overflow-y-auto">
@@ -78,26 +73,6 @@ export default function Profile({
 								</Button>
 							</Link>
 						</div>
-
-						{loadingLanguages ? (
-							<div className="flex flex-wrap gap-2 mt-8">
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-								<Skeleton className="w-20 h-7 rounded"></Skeleton>
-							</div>
-						) : (
-							<div className="flex flex-wrap gap-2 mt-8">
-								{languages.map((lang: string) => (
-									<Badge key={lang} variant="secondary" className="px-3 py-1">
-										{lang}
-									</Badge>
-								))}
-							</div>
-						)}
 					</CardContent>
 				</Card>
 

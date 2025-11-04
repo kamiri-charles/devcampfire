@@ -56,7 +56,7 @@ export function ChatArea({
 		if (conversationId) {
 			fetchMessages();
 		}
-	}, []);
+	}, [conversationId]);
 
 	useEffect(() => {
 		if (!conversationId || messages.length === 0) return;

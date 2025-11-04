@@ -25,7 +25,7 @@ export function DmOverview({ conversation, dmId, setDmId }: DmOverviewProps) {
 			(p) => p.id !== session?.user?.dbId
 		);
 		setRecipient(other || null);
-	}, [session?.user.dbId]);
+	}, [session?.user.dbId, conversation.id, conversation.participants]);
 
 	// Update latest message and unread count when a new message is received
 	const handleReceiveNewMessage = (message: DMMessage) => {

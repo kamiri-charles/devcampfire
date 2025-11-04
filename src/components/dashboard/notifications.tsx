@@ -15,8 +15,8 @@ interface Notification {
 }
 
 export function Notifications() {
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [loadingNotifications, setLoadingNotifications] = useState(false);
+	const [notifications] = useState<Notification[]>([]);
+	const [loadingNotifications] = useState(false);
 
 	const displayCardContent = () => {
 		if (loadingNotifications) {

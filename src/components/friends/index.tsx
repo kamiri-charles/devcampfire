@@ -23,6 +23,7 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { getPaginationRange } from "@/lib/utils";
 import Link from "next/link";
+import { DBUser } from "@/db/schema";
 
 interface FriendsProps {
 	connections: GitHubConnections | null;
@@ -66,7 +67,7 @@ export default function Friends({
 			default:
 				return connections.followers;
 		}
-	}, [activeTab, connections]);
+	}, [activeTab, connections, inAppUsers]);
 
 	// Apply search filter (global across all connections)
 	const filteredList = useMemo(() => {
@@ -89,7 +90,7 @@ export default function Friends({
 		return allUsers.filter((user) =>
 			user.username.toLowerCase().includes(searchQuery.toLowerCase())
 		);
-	}, [searchQuery, currentList, connections]);
+	}, [searchQuery, currentList, connections, inAppUsers]);
 
 	const paginatedList = useMemo(() => {
 		const start = (page - 1) * perPage;
@@ -186,7 +187,7 @@ export default function Friends({
 					.filter(Boolean) as GitHubUserLite[];
 
 				const inApp = mapped.filter((u) =>
-					data.users.some((dbU: any) => dbU.githubUsername === u.username)
+					data.users.some((dbU: DBUser) => dbU.githubUsername === u.username)
 				);
 
 				setInAppUsers(inApp);

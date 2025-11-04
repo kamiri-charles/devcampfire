@@ -5,7 +5,6 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Send, ArrowLeft, Search, Loader2 } from "lucide-react";
 import { ChatArea } from "./chat-area";
 import { DMConversation } from "@/types/db-customs";
-import { useSession } from "next-auth/react";
 import { DmOverview } from "./dm-overview";
 
 interface DirectMessagesProps {
@@ -19,8 +18,7 @@ export default function DirectMessages({
 	setCurrentSection,
 	onBack,
 }: DirectMessagesProps) {
-	const { data: session } = useSession();
-	const [dmId, setDmId] = useState<string | null>(conversationId);
+	const [, setDmId] = useState<string | null>(conversationId);
 	const [dms, setDms] = useState<DMConversation[]>([]);
 	const [loadingDms, setLoadingDms] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");

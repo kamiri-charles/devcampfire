@@ -43,7 +43,7 @@ export default function Dashboard({
 						!
 					</h1>
 					<p className="text-muted-foreground mt-2">
-						Here's what's happening in your developer community
+						{"Here's what's happening in your developer community"}
 					</p>
 				</div>
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { GithubConnectionReturn } from "@/types/github";
 
 export async function GET() {
 	const session = await auth();
@@ -30,28 +31,30 @@ export async function GET() {
 		const following = await followingRes.json();
 
 		// Sets for comparisons
-		const followingSet = new Set(following.map((f: any) => f.login));
+		const followingSet = new Set(following.map((f: GithubConnectionReturn) => f.login));
 
 		// Mutuals
-		const mutuals = followers.filter((f: any) => followingSet.has(f.login));
+		const mutuals = followers.filter((f: GithubConnectionReturn) => followingSet.has(f.login));
+
 
 		return NextResponse.json({
-			followers: followers.map((u: any) => ({
+			followers: followers.map((u: GithubConnectionReturn) => ({
 				id: u.id,
 				username: u.login,
 				avatar: u.avatar_url,
 			})),
-			following: following.map((u: any) => ({
+			following: following.map((u: GithubConnectionReturn) => ({
 				id: u.id,
 				username: u.login,
 				avatar: u.avatar_url,
 			})),
-			mutuals: mutuals.map((u: any) => ({
+			mutuals: mutuals.map((u: GithubConnectionReturn) => ({
 				id: u.id,
 				username: u.login,
 				avatar: u.avatar_url,
 			})),
 		});
+
 	} catch (err) {
 		console.error(err);
 		return NextResponse.json({ error: "Unexpected error" }, { status: 500 });

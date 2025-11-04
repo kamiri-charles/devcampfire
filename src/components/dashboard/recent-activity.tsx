@@ -14,7 +14,7 @@ interface RecentActivityProps {
     handleOpenDM: (conversationId: string) => void;
 }	
 
-export function RecentActivity({ connections, setCurrentSection, handleOpenDM }: RecentActivityProps) {
+export function RecentActivity({ connections, setCurrentSection }: RecentActivityProps) {
 	const [activeFriends, setActiveFriends] = useState<GitHubUserLite[]>([]);
 	const [loadingActiveFriends, setLoadingActiveFriends] = useState(false);
 

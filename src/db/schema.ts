@@ -29,7 +29,8 @@ export const users = pgTable("users", {
 	role: userRole("role").default("user").notNull(),
 	status: userStatus("status").default("offline").notNull(),
 	lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
-	settings: json("settings").$type<Record<string, any>>().default({}),
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	settings: json("settings").$type<Record<string, any>>().default({}), // TODO: Remove 'any' type
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),

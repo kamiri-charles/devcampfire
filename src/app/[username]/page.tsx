@@ -19,8 +19,6 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 export default function UserPage() {
 	const [currentSection, setCurrentSection] = useState("dashboard");
 	const [currentDMId, setCurrentDMId] = useState<string | null>(null);
-	const [languages, setLanguages] = useState<string[]>([]);
-	const [loadingLanguages, setLoadingLanguages] = useState(true);
 	const [channels, setChannels] = useState<DBConversation[]>([]);
 	const [loadingChannels, setLoadingChannels] = useState(true);
 	const [selectedRoom, setSelectedRoom] = useState<DBConversation | null>(null);
@@ -43,22 +41,6 @@ export default function UserPage() {
 			}
 		};
 		updateStatus();
-
-		const fetchLanguages = async () => {
-			try {
-				const res = await fetch("/api/github/languages");
-				if (res.ok) {
-					const data = await res.json();
-					setLanguages(data.topLanguages);
-				}
-			} catch (e) {
-				console.error(e);
-			} finally {
-				setLoadingLanguages(false);
-			}
-		};
-		fetchLanguages();
-
 
 		const fetchRooms = async () => {
 			try {
@@ -151,8 +133,6 @@ export default function UserPage() {
 				return (
 					<Profile
 						session={session}
-						languages={languages}
-						loadingLanguages={loadingLanguages}
 					/>
 				);
 			case "collab":
